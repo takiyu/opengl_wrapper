@@ -6,20 +6,30 @@
 
 namespace oglw {
 
+enum class MemType { ANY, CPU, GPU };
+enum class DatType { ANY, UINT8, FLOAT32 };
+
+class ImageImpl;
+
 class Image {
 public:
-    Image();
+    Image(MemType mem_type = MemType::ANY);
+    void init(int w, int h, int c = 4, DatType dat_type = DatType::UINT8);
+
+    void toCPU();
+    void toGPU();
+
 private:
-    class Impl;
-    std::unique_ptr<Impl> m_impl;
+    std::unique_ptr<ImageImpl> m_impl;
 };
 
 class Effect {
 public:
     Effect();
+
 private:
     class Impl;
-    std::unique_ptr<Impl> m_impl;
+    std::unique_ptr<ImageImpl> m_impl;
 };
 
 }  // namespace oglw

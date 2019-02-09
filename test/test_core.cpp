@@ -1,13 +1,12 @@
 #include "catch2/catch.hpp"
 
-#include <glad/glad.h>
+#include <glad/glad.h>  // must be before GLFW
+
 #include <GLFW/glfw3.h>
 
 #include <iostream>
 
-
 static GLFWwindow* InitOpenGL(const std::string& window_title) {
-
     // Set error callback
     glfwSetErrorCallback([](int error, const char* description) {
         std::cerr << "GLFW Error " << error << ": " << description << std::endl;
@@ -16,7 +15,6 @@ static GLFWwindow* InitOpenGL(const std::string& window_title) {
     // Initialize GLFW
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
-        ;
         return nullptr;
     }
     atexit([]() { glfwTerminate(); });
@@ -32,9 +30,10 @@ static GLFWwindow* InitOpenGL(const std::string& window_title) {
 #endif
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    // Create hidden OpenGL window and context
-    GLFWwindow* window = glfwCreateWindow(1200, 900, window_title.c_str(), NULL,
-                                          NULL);
+    // Create OpenGL window and context
+    glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+    GLFWwindow* window =
+            glfwCreateWindow(1200, 900, window_title.c_str(), nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         return nullptr;
@@ -43,7 +42,7 @@ static GLFWwindow* InitOpenGL(const std::string& window_title) {
     glfwSwapInterval(1);  // Enable vsync
 
     // Initialize GLAD
-    if(!gladLoadGL()) {
+    if (!gladLoadGL()) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return nullptr;
     }
@@ -51,9 +50,7 @@ static GLFWwindow* InitOpenGL(const std::string& window_title) {
     return window;
 }
 
-
 TEST_CASE("Core test") {
-
     SECTION("Build basic") {
         REQUIRE(InitOpenGL("Title") != nullptr);
         REQUIRE(1 + 3 == 4);

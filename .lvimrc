@@ -1,3 +1,13 @@
 let g:ale_c_build_dir = './build'
 let g:ale_c_parse_makefile = 1
 let g:ale_c_parse_compile_commands = 1
+
+function! g:BuildAndRun()
+    if g:asyncrun_status != 'running'
+        execute 'AsyncStop'
+        execute 'AsyncRun cd build && make -j3 && ./bin/oglw_test'
+    endif
+endfunction
+noremap <F8> :call g:BuildAndRun()<CR>
+command! Make call g:BuildAndRun()
+autocmd BufWritePost *.h,*.c,*.cpp call g:BuildAndRun()

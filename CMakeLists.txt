@@ -97,7 +97,7 @@ list(APPEND OGLW_LIBRARY ${OPENGL_LIBRARY})
 # GLAD
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/glad)
 list(APPEND OGLW_INCLUDE ${GLAD_INCLUDE_DIRS})
-list(APPEND OGLW_TEST_LIBRARY ${GLAD_LIBRARIES})
+list(APPEND OGLW_LIBRARY ${GLAD_LIBRARIES})
 
 # ------------------------------------------------------------------------------
 # ----------------------------- Internal Libraries -----------------------------
@@ -106,6 +106,9 @@ list(APPEND OGLW_TEST_LIBRARY ${GLAD_LIBRARIES})
 # oglw.so
 add_library(oglw ${LINK_TYPE}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/oglw.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/image.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/effect.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/fast_array.cpp
 )
 
 list(APPEND OGLW_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -133,6 +136,7 @@ if (OGLW_BUILD_TESTS)
     add_executable(oglw_test
         ${CMAKE_CURRENT_SOURCE_DIR}/test/test.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/test/test_core.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/test_fast_array.cpp
     )
     setup_target(oglw_test "${OGLW_INCLUDE};${OGLW_TEST_INCLUDE}"
                  "${OGLW_LIBRARY};${OGLW_TEST_LIBRARY}")
