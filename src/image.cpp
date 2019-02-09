@@ -28,11 +28,20 @@ class ImageImplCPU : public ImageImpl {
 public:
     void init(int w, int h, int c, DatType dat_type);
 private:
-//     FastArray
+//     std::unique_ptr<void> m_array;
 };
 
 void ImageImplCPU::init(int w, int h, int c, DatType dat_type) {
     m_dat_type = dat_type;
+    // Create array instance
+//     if (dat_type == DatType::ANY) {
+//     } else if (dat_type == DatType::UINT8) {
+//         m_array = std::make_unique<FastArray<uint8_t>>(w * h * c);
+//     } else if (dat_type == DatType::FLOAT32) {
+//         m_array = std::make_unique<FastArray<float>>(w * h * c);
+//     } else {
+//         std::cerr << "Invalid oglw::DatType" << std::endl;
+//     }
 }
 
 // ================================= GPU Image =================================
