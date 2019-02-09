@@ -65,10 +65,7 @@ public:
 
     template <typename T>
     Any(T&& value) {
-        using TypeCVR = T;
-        using TypeCV = typename std::remove_reference<TypeCVR>::type;
-        using Type = typename std::remove_cv<TypeCV>::type;
-        emplace<Type>(std::forward<TypeCV>(value));
+        emplace<std::decay_t<T>>(std::forward<T>(value));
     }
 
     template <typename T, typename Decayed = std::decay_t<T>>
@@ -80,10 +77,7 @@ public:
 
     template <typename T>
     CopyConstractable<T> operator=(T&& value) {
-        using TypeCVR = T;
-        using TypeCV = typename std::remove_reference<TypeCVR>::type;
-        using Type = typename std::remove_cv<TypeCV>::type;
-        emplace<Type>(std::forward<TypeCV>(value));
+        emplace<std::decay_t<T>>(std::forward<T>(value));
         return *this;
     }
 

@@ -43,6 +43,17 @@ TEST_CASE("Any test") {
         REQUIRE(v2.cast<int>() == 6);
     }
 
+    SECTION("Copy const") {
+        oglw::Any v1 = 4;
+        const oglw::Any v2 = 5.f;
+        REQUIRE(v1.type() == typeid(int));
+        REQUIRE(v2.type() == typeid(float));
+        v1 = v2;
+        REQUIRE(v1.type() == typeid(float));
+        REQUIRE(v2.type() == typeid(float));
+        REQUIRE(v1.cast<float>() == v2.cast<float>());
+    }
+
     SECTION("Move") {
         oglw::Any v1 = 4;
         oglw::Any v2 = 5.f;
