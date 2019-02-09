@@ -108,7 +108,6 @@ add_library(oglw ${LINK_TYPE}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/oglw.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/image.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/effect.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/fast_array.cpp
 )
 
 list(APPEND OGLW_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include)
