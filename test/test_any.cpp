@@ -59,9 +59,7 @@ TEST_CASE("Any test") {
         oglw::Any v2 = 5.f;
         REQUIRE(v1.type() == typeid(int));
         REQUIRE(v2.type() == typeid(float));
-        std::cout << "before" << std::endl;
         v1 = std::move(v2);
-        std::cout << "after" << std::endl;
         REQUIRE(v1.type() == typeid(float));
         REQUIRE(!v2.hasValue());
         REQUIRE(v1.cast<float>() == Approx(5.f));

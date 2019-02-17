@@ -19,6 +19,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(LINK_TYPE STATIC)
 else()
     set(LINK_TYPE SHARED)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
 # Print make commands for debug
