@@ -7,14 +7,14 @@
 
 namespace oglw {
 
-enum class MemType { ANY, CPU, GPU };
-enum class DatType { ANY, UINT8, FLOAT32 };
+enum class MemType { CPU, GPU };
+enum class DatType { UINT8, FLOAT32 };
 
 class ImageImpl;
 
 class Image {
 public:
-    Image(MemType mem_type = MemType::ANY);
+    Image(MemType mem_type = MemType::CPU);
     void init(size_t w, size_t h, size_t c, DatType dat_type = DatType::UINT8);
 
     void toCPU();

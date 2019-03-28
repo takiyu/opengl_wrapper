@@ -21,7 +21,7 @@ class ImageImpl {
 public:
     virtual void init(size_t w, size_t h, size_t c, DatType dat_type) = 0;
 protected:
-    DatType m_dat_type = DatType::ANY;
+    DatType m_dat_type = DatType::UINT8;
 };
 
 // ================================= CPU Image =================================
@@ -35,8 +35,7 @@ private:
 void ImageImplCPU::init(size_t w, size_t h, size_t c, DatType dat_type) {
     m_dat_type = dat_type;
     // Create array instance
-    if (dat_type == DatType::ANY) {
-    } else if (dat_type == DatType::UINT8) {
+    if (dat_type == DatType::UINT8) {
         m_array = FastArray<uint8_t>(w * h * c);
     } else if (dat_type == DatType::FLOAT32) {
         m_array = FastArray<float>(w * h * c);
@@ -72,9 +71,7 @@ void ImageImplGPU::init(size_t w, size_t h, size_t c, DatType dat_type) {
 // ============================== Image Interface ==============================
 Image::Image(MemType mem_type) {
     // Create impl instance
-    if (mem_type == MemType::ANY) {
-        m_impl = nullptr;
-    } else if (mem_type == MemType::CPU) {
+    if (mem_type == MemType::CPU) {
         m_impl = std::make_unique<ImageImplCPU>();
     } else if (mem_type == MemType::GPU) {
         m_impl = std::make_unique<ImageImplGPU>();
