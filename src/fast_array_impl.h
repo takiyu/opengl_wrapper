@@ -14,41 +14,41 @@ FastArray<T>::FastArray(size_t n, const T& v) {
 }
 
 template <typename T>
-FastArray<T>::FastArray(const FastArray<T>& other) {
-    alloc(other.size());
-    memcpy(m_data_uc, other.m_data_uc, m_size * sizeof(T));
+FastArray<T>::FastArray(const FastArray<T>& lhs) {
+    alloc(lhs.size());
+    memcpy(m_data_uc, lhs.m_data_uc, m_size * sizeof(T));
 }
 
 template <typename T>
-FastArray<T>& FastArray<T>::operator=(const FastArray<T>& other) {
-    alloc(other.size());
-    memcpy(m_data_uc, other.m_data_uc, m_size * sizeof(T));
+FastArray<T>& FastArray<T>::operator=(const FastArray<T>& lhs) {
+    alloc(lhs.size());
+    memcpy(m_data_uc, lhs.m_data_uc, m_size * sizeof(T));
     return *this;
 }
 
 template <typename T>
-FastArray<T>::FastArray(FastArray<T>&& other) noexcept {
+FastArray<T>::FastArray(FastArray<T>&& lhs) noexcept {
     // Move pointers
-    m_data_uc = other.m_data_uc;
-    m_data = other.m_data;
-    m_size = other.m_size;
+    m_data_uc = lhs.m_data_uc;
+    m_data = lhs.m_data;
+    m_size = lhs.m_size;
     // Clear the other side
-    other.m_data_uc = nullptr;
-    other.m_data = nullptr;
-    other.m_size = 0;
+    lhs.m_data_uc = nullptr;
+    lhs.m_data = nullptr;
+    lhs.m_size = 0;
 }
 
 template <typename T>
-FastArray<T>& FastArray<T>::operator=(FastArray<T>&& other) noexcept {
+FastArray<T>& FastArray<T>::operator=(FastArray<T>&& lhs) noexcept {
     clear();
     // Move pointers
-    m_data_uc = other.m_data_uc;
-    m_data = other.m_data;
-    m_size = other.m_size;
+    m_data_uc = lhs.m_data_uc;
+    m_data = lhs.m_data;
+    m_size = lhs.m_size;
     // Clear the other side
-    other.m_data_uc = nullptr;
-    other.m_data = nullptr;
-    other.m_size = 0;
+    lhs.m_data_uc = nullptr;
+    lhs.m_data = nullptr;
+    lhs.m_size = 0;
     return *this;
 }
 

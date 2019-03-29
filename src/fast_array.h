@@ -16,10 +16,10 @@ public:
     FastArray();
     FastArray(size_t n);
     FastArray(size_t n, const T& v);
-    FastArray(const FastArray& other);
-    FastArray& operator=(const FastArray& other);
-    FastArray(FastArray&& other) noexcept;
-    FastArray& operator=(FastArray&& other) noexcept;
+    FastArray(const FastArray& lhs);
+    FastArray& operator=(const FastArray& lhs);
+    FastArray(FastArray&& lhs) noexcept;
+    FastArray& operator=(FastArray&& lhs) noexcept;
     ~FastArray();
 
     void alloc(size_t n);  // Allocate without copy
