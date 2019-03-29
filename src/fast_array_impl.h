@@ -58,16 +58,6 @@ FastArray<T>::~FastArray() {
 }
 
 template <typename T>
-size_t FastArray<T>::size() const {
-    return m_size;
-}
-
-template <typename T>
-bool FastArray<T>::empty() const {
-    return m_size == 0;
-}
-
-template <typename T>
 void FastArray<T>::alloc(size_t n) {
     if (m_size == n) {
         return;
@@ -135,6 +125,16 @@ void FastArray<T>::fill(const T& v) {
 }
 
 template <typename T>
+size_t FastArray<T>::size() const {
+    return m_size;
+}
+
+template <typename T>
+bool FastArray<T>::empty() const {
+    return m_size == 0;
+}
+
+template <typename T>
 const T* FastArray<T>::data() const {
     return m_data;
 }
@@ -142,6 +142,16 @@ const T* FastArray<T>::data() const {
 template <typename T>
 T* FastArray<T>::data() {
     return m_data;
+}
+
+template <typename T>
+typename FastArray<T>::iterator FastArray<T>::begin() {
+    return m_data;
+}
+
+template <typename T>
+typename FastArray<T>::iterator FastArray<T>::end() {
+    return m_data + m_size;
 }
 
 template <typename T>

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <chrono>
 #include <vector>
+#include <algorithm>
 
 class Timer {
 public:
@@ -109,6 +110,40 @@ TEST_CASE("FastArray test") {
         // Check new values
         for (size_t i = 10; i < 100; i++) {
             REQUIRE(a[i] == 123);
+        }
+    }
+
+    SECTION("Range-for") {
+        oglw::FastArray<int> a(10);
+        {
+            int i = 0;
+            for (auto& item : a) {
+                item = i++;
+            }
+        }
+        for (size_t i = 0; i < 10; i++) {
+            REQUIRE(a[i] == i);
+        }
+    }
+
+    SECTION("stl algorithm") {
+        oglw::FastArray<int> a(10);
+
+        {
+            int i = 0;
+            std::for_each(a.begin(), a.end(), [&](int &item) { item = i++; });
+        }
+
+        std::vector<std::string> v;
+        {
+            auto adv_itr = a.begin();
+            std::advance(adv_itr, 1);
+            std::transform(adv_itr, a.end(), a.begin(), std::back_inserter(v),
+                [](int x, int y) { return std::to_string(x + y); });
+        }
+        for (size_t i = 0; i < v.size(); i++) {
+            std::cout << v[i] << std::endl;
+            REQUIRE(v[i] == std::to_string(2 * i + 1));
         }
     }
 }

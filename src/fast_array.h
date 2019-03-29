@@ -11,6 +11,7 @@ template <typename T>
 class FastArray {
 public:
     using value_type = T;
+    using iterator = T*;
 
     FastArray();
     FastArray(size_t n);
@@ -21,17 +22,20 @@ public:
     FastArray& operator=(FastArray&& other) noexcept;
     ~FastArray();
 
+    void alloc(size_t n);  // Allocate without copy
+    void clear();
+    void resize(size_t n); // Resize with copy
+    void resize(size_t n, const T& v);  // Resize with copy and fill
+    void fill(const T& v);
+
     size_t size() const;
     bool empty() const;
-
-    void alloc(size_t n);
-    void clear();
-    void resize(size_t n);
-    void resize(size_t n, const T& v);
-
-    void fill(const T& v);
     const T* data() const;
     T* data();
+
+    iterator begin();
+    iterator end();
+
     const T& operator[](size_t i) const;
     T& operator[](size_t i);
 
