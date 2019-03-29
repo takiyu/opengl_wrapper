@@ -136,6 +136,7 @@ if (OGLW_BUILD_TESTS)
     add_executable(oglw_test
         ${CMAKE_CURRENT_SOURCE_DIR}/test/test.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/test/test_core.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/test_image.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/test/test_fast_array.cpp
     )
     setup_target(oglw_test "${OGLW_INCLUDE};${OGLW_TEST_INCLUDE}"

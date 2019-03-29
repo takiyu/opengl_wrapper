@@ -142,7 +142,6 @@ TEST_CASE("FastArray test") {
                 [](int x, int y) { return std::to_string(x + y); });
         }
         for (size_t i = 0; i < v.size(); i++) {
-            std::cout << v[i] << std::endl;
             REQUIRE(v[i] == std::to_string(2 * i + 1));
         }
     }

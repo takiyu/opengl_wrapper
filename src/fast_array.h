@@ -10,8 +10,8 @@ namespace oglw {
 template <typename T>
 class FastArray {
 public:
-    using value_type = T;
-    using iterator = T*;
+    using ValueType = T;
+    using Iterator = T*;
 
     FastArray();
     FastArray(size_t n);
@@ -33,8 +33,8 @@ public:
     const T* data() const;
     T* data();
 
-    iterator begin();
-    iterator end();
+    Iterator begin();
+    Iterator end();
 
     const T& operator[](size_t i) const;
     T& operator[](size_t i);

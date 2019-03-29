@@ -145,12 +145,12 @@ T* FastArray<T>::data() {
 }
 
 template <typename T>
-typename FastArray<T>::iterator FastArray<T>::begin() {
+typename FastArray<T>::Iterator FastArray<T>::begin() {
     return m_data;
 }
 
 template <typename T>
-typename FastArray<T>::iterator FastArray<T>::end() {
+typename FastArray<T>::Iterator FastArray<T>::end() {
     return m_data + m_size;
 }
 
