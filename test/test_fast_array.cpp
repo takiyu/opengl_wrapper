@@ -2,10 +2,10 @@
 
 #include "../src/fast_array.h"
 
-#include <iostream>
-#include <chrono>
-#include <vector>
 #include <algorithm>
+#include <chrono>
+#include <iostream>
+#include <vector>
 
 class Timer {
 public:
@@ -30,7 +30,6 @@ private:
 };
 
 TEST_CASE("FastArray test") {
-
     SECTION("Time comparison") {
         const size_t N = 100000000;
         Timer t1, t2;
@@ -40,7 +39,8 @@ TEST_CASE("FastArray test") {
             t1.start();
             a.alloc(N);
             t1.end();
-            std::cout << "FastArray: " << t1.getElapsedMsec() << std::endl;
+            std::cout << "FastArray: " << t1.getElapsedMsec() << "ms"
+                      << std::endl;
         }
         {
             // Vector
@@ -48,7 +48,8 @@ TEST_CASE("FastArray test") {
             t2.start();
             v.resize(N);
             t2.end();
-            std::cout << "FastArray: " << t2.getElapsedMsec() << std::endl;
+            std::cout << "std::vector: " << t2.getElapsedMsec() << "ms"
+                      << std::endl;
         }
         REQUIRE(t1.getElapsedMsec() < t2.getElapsedMsec());
     }
@@ -131,7 +132,7 @@ TEST_CASE("FastArray test") {
 
         {
             int i = 0;
-            std::for_each(a.begin(), a.end(), [&](int &item) { item = i++; });
+            std::for_each(a.begin(), a.end(), [&](int& item) { item = i++; });
         }
 
         std::vector<std::string> v;
@@ -139,7 +140,7 @@ TEST_CASE("FastArray test") {
             auto adv_itr = a.begin();
             std::advance(adv_itr, 1);
             std::transform(adv_itr, a.end(), a.begin(), std::back_inserter(v),
-                [](int x, int y) { return std::to_string(x + y); });
+                           [](int x, int y) { return std::to_string(x + y); });
         }
         for (size_t i = 0; i < v.size(); i++) {
             REQUIRE(v[i] == std::to_string(2 * i + 1));
