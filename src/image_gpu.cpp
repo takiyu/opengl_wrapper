@@ -149,6 +149,41 @@ public:
     }
 
     // -------------------------------------------------------------------------
+    CpuImage<T> toCpu() const {
+        // Copy GPU -> CPU
+        // Cost of allocation is almost zero because of FastArray.
+        if (empty()) {
+            return {};
+        }
+
+        GLuint fbo_id;
+        glGenFramebuffers(1, &fbo_id);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, m_tex_id, 0);
+
+        CpuImage<T> cpu_img(m_w, m_h, m_d);
+
+        glPixelStorei(GL_PACK_ALIGNMENT, GetGlStoreSize(m_d));
+        glReadPixels(0, 0, m_w, m_h, GetGlFmt(m_d), GetGlType<T>(),
+                     cpu_img.data());
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteFramebuffers(1, &fbo_id);
+
+        return std::move(cpu_img);
+    }
+
+    void fromCpu(const CpuImage<T>& cpu_img) {
+        // Copy CPU -> GPU
+        if (!IsSameSize(*this, cpu_img)) {
+            init(cpu_img.getWidth(), cpu_img.getHeight(), cpu_img.getDepth());
+        }
+        glPixelStorei(GL_UNPACK_ALIGNMENT, GetGlStoreSize(m_d));
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_w, m_h, GetGlFmt(m_d),
+                        GetGlType<T>(), cpu_img.data());
+    }
+
+    // -------------------------------------------------------------------------
     void init(size_t w, size_t h, size_t d) {
         // Release forcibly
         release();
@@ -189,38 +224,8 @@ public:
     }
 
     // -------------------------------------------------------------------------
-    CpuImage<T> toCpu() const {
-        // Copy GPU -> CPU
-        // Cost of allocation is almost zero because of FastArray.
-        if (empty()) {
-            return {};
-        }
-
-        GLuint fbo_id;
-        glGenFramebuffers(1, &fbo_id);
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               GL_TEXTURE_2D, m_tex_id, 0);
-
-        CpuImage<T> cpu_img(m_w, m_h, m_d);
-
-        glPixelStorei(GL_PACK_ALIGNMENT, GetGlStoreSize(m_d));
-        glReadPixels(0, 0, m_w, m_h, GetGlFmt(m_d), GetGlType<T>(),
-                     cpu_img.data());
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glDeleteFramebuffers(1, &fbo_id);
-
-        return std::move(cpu_img);
-    }
-
-    void fromCpu(const CpuImage<T>& cpu_img) {
-        // Copy CPU -> GPU
-        if (!IsSameSize(*this, cpu_img)) {
-            init(cpu_img.getWidth(), cpu_img.getHeight(), cpu_img.getDepth());
-        }
-        glPixelStorei(GL_UNPACK_ALIGNMENT, GetGlStoreSize(m_d));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_w, m_h, GetGlFmt(m_d),
-                        GetGlType<T>(), cpu_img.data());
+    void bindTexture() const {
+        glBindTexture(GL_TEXTURE_2D, m_tex_id);
     }
 
     // -------------------------------------------------------------------------
@@ -300,6 +305,12 @@ size_t GpuImage<T>::getHeight() const {
 template <typename T>
 size_t GpuImage<T>::getDepth() const {
     return m_impl->getDepth();
+}
+
+// -----------------------------------------------------------------------------
+template <typename T>
+void GpuImage<T>::bindTexture() const {
+    m_impl->bindTexture();
 }
 
 // -----------------------------------------------------------------------------

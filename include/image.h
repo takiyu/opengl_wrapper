@@ -92,6 +92,8 @@ public:
     virtual size_t getHeight() const override;
     virtual size_t getDepth() const override;
 
+    void bindTexture() const;
+
 private:
     class Impl;
     std::unique_ptr<Impl> m_impl;

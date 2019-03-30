@@ -237,6 +237,26 @@ TEST_CASE("Image test") {
     }
 
 // =============================================================================
+    SECTION("GpuImage Basic 1ch") {
+        REQUIRE(InitOpenGL("Title") != nullptr);
+
+        oglw::CpuImage<uint8_t> cpu_img1(10, 20, 1);
+        SetAll(cpu_img1);
+        oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
+        oglw::CpuImage<uint8_t> cpu_img2 = gpu_img.toCpu();
+        REQUIRE(CheckAll(cpu_img2));
+    }
+
+    SECTION("GpuImage Basic 2ch") {
+        REQUIRE(InitOpenGL("Title") != nullptr);
+
+        oglw::CpuImage<uint8_t> cpu_img1(10, 20, 2);
+        SetAll(cpu_img1);
+        oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
+        oglw::CpuImage<uint8_t> cpu_img2 = gpu_img.toCpu();
+        REQUIRE(CheckAll(cpu_img2));
+    }
+
     SECTION("GpuImage Basic 3ch") {
         REQUIRE(InitOpenGL("Title") != nullptr);
 
@@ -254,6 +274,26 @@ TEST_CASE("Image test") {
         SetAll(cpu_img1);
         oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
         oglw::CpuImage<uint8_t> cpu_img2 = gpu_img.toCpu();
+        REQUIRE(CheckAll(cpu_img2));
+    }
+
+    SECTION("GpuImage float16") {
+        REQUIRE(InitOpenGL("Title") != nullptr);
+
+        oglw::CpuImage<oglw::Float16> cpu_img1(10, 20, 4);
+        SetAll(cpu_img1);
+        oglw::GpuImage<oglw::Float16> gpu_img = cpu_img1.toGpu();
+        oglw::CpuImage<oglw::Float16> cpu_img2 = gpu_img.toCpu();
+        REQUIRE(CheckAll(cpu_img2));
+    }
+
+    SECTION("GpuImage float32") {
+        REQUIRE(InitOpenGL("Title") != nullptr);
+
+        oglw::CpuImage<float> cpu_img1(10, 20, 4);
+        SetAll(cpu_img1);
+        oglw::GpuImage<float> gpu_img = cpu_img1.toGpu();
+        oglw::CpuImage<float> cpu_img2 = gpu_img.toCpu();
         REQUIRE(CheckAll(cpu_img2));
     }
 }
