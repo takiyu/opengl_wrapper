@@ -2,9 +2,10 @@
 
 #include <glad/glad.h>
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 #include <stdexcept>
+#include <sstream>
 
 #include "image_utils.h"
 
@@ -12,50 +13,107 @@ namespace oglw {
 
 namespace {
 
+// -----------------------------------------------------------------------------
 template <typename T>
-GLenum GetInternalFmt(size_t d);
+GLenum GetGlInternalFmt(size_t d);
 
 template <>
-GLenum GetInternalFmt<uint8_t>(size_t d) {
+GLenum GetGlInternalFmt<uint8_t>(size_t d) {
     switch (d) {
         case 1: return GL_R8;
         case 2: return GL_RG8;
         case 3: return GL_RGB8;
         case 4: return GL_RGBA8;
     }
-    throw std::runtime_error("Invalid depth size for uint8_t");
+    std::stringstream ss;
+    ss << "Invalid depth size for uint8_t: \"" << d << "\" (internal fmt)";
+    throw std::runtime_error(ss.str());
 }
 
 template <>
-GLenum GetInternalFmt<Float16>(size_t d) {
+GLenum GetGlInternalFmt<Float16>(size_t d) {
     switch (d) {
         case 1: return GL_R16F;
         case 2: return GL_RG16F;
         case 3: return GL_RGB16F;
         case 4: return GL_RGBA16F;
     }
-    throw std::runtime_error("Invalid depth size for Float16");
+    std::stringstream ss;
+    ss << "Invalid depth size for float16: \"" << d << "\" (internal fmt)";
+    throw std::runtime_error(ss.str());
 }
 
 template <>
-GLenum GetInternalFmt<float>(size_t d) {
+GLenum GetGlInternalFmt<float>(size_t d) {
     switch (d) {
         case 1: return GL_R32F;
         case 2: return GL_RG32F;
         case 3: return GL_RGB32F;
         case 4: return GL_RGBA32F;
     }
-    throw std::runtime_error("Invalid depth size for float");
+    std::stringstream ss;
+    ss << "Invalid depth size for float32: \"" << d << "\" (internal fmt)";
+    throw std::runtime_error(ss.str());
 }
 
+// -----------------------------------------------------------------------------
+GLenum GetGlFmt(size_t d) {
+    switch (d) {
+        case 1: return GL_RED;
+        case 2: return GL_RG;
+        case 3: return GL_RGB;  // TODO: Compare speed with BGR
+        case 4: return GL_RGBA;
+    }
+    std::stringstream ss;
+    ss << "Invalid depth size: \"" << d << "\" (fmt)";
+    throw std::runtime_error(ss.str());
+}
+
+// -----------------------------------------------------------------------------
+template <typename T>
+inline GLenum GetGlType();
+
+template <>
+inline GLenum GetGlType<uint8_t>() {
+    return GL_UNSIGNED_BYTE;
+}
+
+template <>
+inline GLenum GetGlType<Float16>() {
+    return GL_FLOAT;  // float16 in GPU, but float32 in CPU
+}
+
+template <>
+inline GLenum GetGlType<float>() {
+    return GL_FLOAT;
+}
+
+// -----------------------------------------------------------------------------
+GLint GetGlStoreSize(size_t d) {
+    switch (d) {
+        case 1: return 1;
+        case 2: return 2;
+        case 3: return 1;
+        case 4: return 4;
+    }
+    std::stringstream ss;
+    ss << "Invalid depth size: \"" << d << "\" (store size)";
+    throw std::runtime_error(ss.str());
+}
+
+// -----------------------------------------------------------------------------
 inline void CopyTexture(GLuint src_tex_id, GLuint dst_tex_id, GLsizei src_w,
                         GLsizei src_h, GLsizei src_d, GLint src_x = 0,
                         GLint src_y = 0, GLint src_z = 0, GLint dst_x = 0,
                         GLint dst_y = 0, GLint dst_z = 0) {
-    glCopyImageSubData(src_tex_id, GL_TEXTURE_2D, 0, src_x, src_y, src_z,
-                       dst_tex_id, GL_TEXTURE_2D, 0, dst_x, dst_y, dst_z, src_w,
-                       src_h, src_d);
+    if (0 < src_w && 0 < src_h && 0 < src_d) {
+        glCopyImageSubData(src_tex_id, GL_TEXTURE_2D, 0, src_x, src_y, src_z,
+                           dst_tex_id, GL_TEXTURE_2D, 0, dst_x, dst_y, dst_z,
+                           src_w, src_h, src_d);
+    }
 }
+
+// -----------------------------------------------------------------------------
 
 }  // namespace
 
@@ -78,7 +136,6 @@ public:
 
     Impl& operator=(const Impl& lhs) {
         if (!IsSameSize(*this, lhs)) {
-            release();
             init(lhs.m_w, lhs.m_h, lhs.m_d);
         }
         CopyTexture(lhs.m_tex_id, m_tex_id, lhs.m_w, lhs.m_h, lhs.m_d);
@@ -96,6 +153,10 @@ public:
         // Release forcibly
         release();
 
+        m_w = w;
+        m_h = h;
+        m_d = d;
+
         // Zero size
         if (w == 0 || h == 0 || d == 0) {
             return;
@@ -104,7 +165,7 @@ public:
         // Create
         glGenTextures(1, &m_tex_id);
         glBindTexture(GL_TEXTURE_2D, m_tex_id);
-        glTexStorage2D(GL_TEXTURE_2D, 1, GetInternalFmt<T>(d), w, h);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GetGlInternalFmt<T>(d), w, h);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -128,6 +189,41 @@ public:
     }
 
     // -------------------------------------------------------------------------
+    CpuImage<T> toCpu() const {
+        // Copy GPU -> CPU
+        // Cost of allocation is almost zero because of FastArray.
+        if (empty()) {
+            return {};
+        }
+
+        GLuint fbo_id;
+        glGenFramebuffers(1, &fbo_id);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, m_tex_id, 0);
+
+        CpuImage<T> cpu_img(m_w, m_h, m_d);
+
+        glPixelStorei(GL_PACK_ALIGNMENT, GetGlStoreSize(m_d));
+        glReadPixels(0, 0, m_w, m_h, GetGlFmt(m_d), GetGlType<T>(),
+                     cpu_img.data());
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteFramebuffers(1, &fbo_id);
+
+        return std::move(cpu_img);
+    }
+
+    void fromCpu(const CpuImage<T>& cpu_img) {
+        // Copy CPU -> GPU
+        if (!IsSameSize(*this, cpu_img)) {
+            init(cpu_img.getWidth(), cpu_img.getHeight(), cpu_img.getDepth());
+        }
+        glPixelStorei(GL_UNPACK_ALIGNMENT, GetGlStoreSize(m_d));
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_w, m_h, GetGlFmt(m_d),
+                        GetGlType<T>(), cpu_img.data());
+    }
+
+    // -------------------------------------------------------------------------
 private:
     void release() {
         if (!empty()) {
@@ -140,7 +236,8 @@ private:
 };
 
 // -----------------------------------------------------------------------------
-// ------------------------------- Pimpl Pattern -------------------------------
+// ------------------------------- Pimpl Pattern
+// -------------------------------
 // -----------------------------------------------------------------------------
 template <typename T>
 GpuImage<T>::GpuImage() : m_impl(std::make_unique<Impl>()) {}
@@ -170,6 +267,17 @@ GpuImage<T>::~GpuImage() = default;
 
 // -----------------------------------------------------------------------------
 template <typename T>
+CpuImage<T> GpuImage<T>::toCpu() const {
+    return m_impl->toCpu();
+}
+
+template <typename T>
+void GpuImage<T>::fromCpu(const CpuImage<T>& cpu_img) {
+    m_impl->fromCpu(cpu_img);
+}
+
+// -----------------------------------------------------------------------------
+template <typename T>
 void GpuImage<T>::init(size_t w, size_t h, size_t d) {
     m_impl->init(w, h, d);
 }
@@ -193,6 +301,7 @@ template <typename T>
 size_t GpuImage<T>::getDepth() const {
     return m_impl->getDepth();
 }
+
 // -----------------------------------------------------------------------------
 
 }  // namespace oglw

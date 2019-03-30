@@ -1,7 +1,9 @@
 #include "catch2/catch.hpp"
 
-#include "../include/image.h"
-#include "../include/image_utils.h"
+#include "image.h"
+#include "image_utils.h"
+
+#include "init_gl.h"
 
 #include <iostream>
 #include <chrono>
@@ -54,7 +56,16 @@ bool CheckAllByPtr(T& img) {
 
 TEST_CASE("Image test") {
 
-    SECTION("CpuImage Basic") {
+    SECTION("Image Instances") {
+        oglw::CpuImage<uint8_t> cpu_img_8u;
+        oglw::CpuImage<oglw::Float16> cpu_img_16f;
+        oglw::CpuImage<float> cpu_img_32f;
+        oglw::GpuImage<uint8_t> gpu_img_8u;
+        oglw::GpuImage<oglw::Float16> gpu_img_16f;
+        oglw::GpuImage<float> gpu_img_32f;
+    }
+
+    SECTION("CpuImage Basic uint8_t") {
         oglw::CpuImage<uint8_t> img(10, 20, 3);
         REQUIRE(!img.empty());
         REQUIRE(img.getWidth() == 10);
@@ -69,6 +80,22 @@ TEST_CASE("Image test") {
 
         // Pointer access
         REQUIRE(CheckAllByPtr(img));
+    }
+
+    SECTION("CpuImage Basic float16") {
+        oglw::CpuImage<oglw::Float16> img(10, 20, 3);
+        // Set
+        SetAll(img);
+        // Get
+        REQUIRE(CheckAll(img));
+    }
+
+    SECTION("CpuImage Basic float") {
+        oglw::CpuImage<float> img(10, 20, 3);
+        // Set
+        SetAll(img);
+        // Get
+        REQUIRE(CheckAll(img));
     }
 
     SECTION("CpuImage Move-constructed") {
@@ -211,6 +238,13 @@ TEST_CASE("Image test") {
 
 // =============================================================================
     SECTION("GpuImage Basic") {
+        REQUIRE(InitOpenGL("Title") != nullptr);
+
+        oglw::CpuImage<uint8_t> cpu_img1(10, 20, 3);
+        SetAll(cpu_img1);
+        oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
+        oglw::CpuImage<uint8_t> cpu_img2 = gpu_img.toCpu();
+        REQUIRE(CheckAll(cpu_img2));
     }
 }
 

@@ -5,8 +5,8 @@ namespace oglw {
 
 // ================================ Image Utils ================================
 
-template <typename T>
-bool IsSameSize(const T& lhs, const T& rhs) {
+template <typename T1, typename T2>
+bool IsSameSize(const T1& lhs, const T2& rhs) {
     return lhs.getWidth() == rhs.getWidth() &&
            lhs.getHeight() == rhs.getHeight() &&
            lhs.getDepth() == rhs.getDepth();

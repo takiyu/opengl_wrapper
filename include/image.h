@@ -1,10 +1,15 @@
-#ifndef OGLW_H_190205
-#define OGLW_H_190205
+#ifndef OGLW_IMAGE_H_190205
+#define OGLW_IMAGE_H_190205
 
 #include <functional>
 #include <memory>
 
+#include "float16.h"
+
 namespace oglw {
+
+template <typename T> class CpuImage;
+template <typename T> class GpuImage;
 
 // ================================= Image Base ================================
 class Image {
@@ -34,6 +39,9 @@ public:
     CpuImage& operator=(const CpuImage&);
     CpuImage& operator=(CpuImage&&);
     virtual ~CpuImage();
+
+    GpuImage<T> toGpu() const;
+    void fromGpu(const GpuImage<T>& gpu_img);
 
     virtual void init(size_t w, size_t h, size_t d) override;
     virtual bool empty() const override;
@@ -75,6 +83,9 @@ public:
     GpuImage& operator=(GpuImage&&);
     virtual ~GpuImage();
 
+    CpuImage<T> toCpu() const;
+    void fromCpu(const CpuImage<T>& cpu_img);
+
     virtual void init(size_t w, size_t h, size_t d) override;
     virtual bool empty() const override;
     virtual size_t getWidth() const override;
@@ -86,11 +97,9 @@ private:
     std::unique_ptr<Impl> m_impl;
 };
 
-// Tag for Half-float
-struct Float16 {};
-
 // ------------------------------ Specialization -------------------------------
 template class CpuImage<uint8_t>;
+template class CpuImage<Float16>;
 template class CpuImage<float>;
 template class GpuImage<uint8_t>;
 template class GpuImage<Float16>;
