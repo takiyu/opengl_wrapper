@@ -237,10 +237,20 @@ TEST_CASE("Image test") {
     }
 
 // =============================================================================
-    SECTION("GpuImage Basic") {
+    SECTION("GpuImage Basic 3ch") {
         REQUIRE(InitOpenGL("Title") != nullptr);
 
         oglw::CpuImage<uint8_t> cpu_img1(10, 20, 3);
+        SetAll(cpu_img1);
+        oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
+        oglw::CpuImage<uint8_t> cpu_img2 = gpu_img.toCpu();
+        REQUIRE(CheckAll(cpu_img2));
+    }
+
+    SECTION("GpuImage Basic 4ch") {
+        REQUIRE(InitOpenGL("Title") != nullptr);
+
+        oglw::CpuImage<uint8_t> cpu_img1(10, 20, 4);
         SetAll(cpu_img1);
         oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
         oglw::CpuImage<uint8_t> cpu_img2 = gpu_img.toCpu();
