@@ -3,8 +3,6 @@
 #include "image.h"
 #include "image_utils.h"
 
-#include "init_gl.h"
-
 #include <iostream>
 #include <chrono>
 #include <vector>
@@ -39,9 +37,9 @@ bool CheckAll(T& img) {
 template <typename T>
 bool CheckAllByPtr(T& img) {
     auto p = img.data();
-    for (size_t y = 0; y < 20; y++) {
-        for (size_t x = 0; x < 10; x++) {
-            for (size_t c = 0; c < 3; c++) {
+    for (size_t y = 0; y < img.getHeight(); y++) {
+        for (size_t x = 0; x < img.getWidth(); x++) {
+            for (size_t c = 0; c < img.getDepth(); c++) {
                 if (*p++ != y + x + c) {
                     return false;
                 }
@@ -238,8 +236,6 @@ TEST_CASE("Image test") {
 
 // =============================================================================
     SECTION("GpuImage Basic 1ch") {
-        REQUIRE(InitOpenGL("Title") != nullptr);
-
         oglw::CpuImage<uint8_t> cpu_img1(10, 20, 1);
         SetAll(cpu_img1);
         oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
@@ -248,8 +244,6 @@ TEST_CASE("Image test") {
     }
 
     SECTION("GpuImage Basic 2ch") {
-        REQUIRE(InitOpenGL("Title") != nullptr);
-
         oglw::CpuImage<uint8_t> cpu_img1(10, 20, 2);
         SetAll(cpu_img1);
         oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
@@ -258,8 +252,6 @@ TEST_CASE("Image test") {
     }
 
     SECTION("GpuImage Basic 3ch") {
-        REQUIRE(InitOpenGL("Title") != nullptr);
-
         oglw::CpuImage<uint8_t> cpu_img1(10, 20, 3);
         SetAll(cpu_img1);
         oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
@@ -268,8 +260,6 @@ TEST_CASE("Image test") {
     }
 
     SECTION("GpuImage Basic 4ch") {
-        REQUIRE(InitOpenGL("Title") != nullptr);
-
         oglw::CpuImage<uint8_t> cpu_img1(10, 20, 4);
         SetAll(cpu_img1);
         oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
@@ -278,8 +268,6 @@ TEST_CASE("Image test") {
     }
 
     SECTION("GpuImage float16") {
-        REQUIRE(InitOpenGL("Title") != nullptr);
-
         oglw::CpuImage<oglw::Float16> cpu_img1(10, 20, 4);
         SetAll(cpu_img1);
         oglw::GpuImage<oglw::Float16> gpu_img = cpu_img1.toGpu();
@@ -288,8 +276,6 @@ TEST_CASE("Image test") {
     }
 
     SECTION("GpuImage float32") {
-        REQUIRE(InitOpenGL("Title") != nullptr);
-
         oglw::CpuImage<float> cpu_img1(10, 20, 4);
         SetAll(cpu_img1);
         oglw::GpuImage<float> gpu_img = cpu_img1.toGpu();
