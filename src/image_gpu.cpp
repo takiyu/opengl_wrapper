@@ -4,8 +4,8 @@
 
 #include <cassert>
 #include <iostream>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 
 #include "image_utils.h"
 
@@ -205,6 +205,8 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     }
 
     bool empty() const {
@@ -233,6 +235,7 @@ private:
     void release() {
         if (!empty()) {
             glDeleteTextures(1, &m_tex_id);
+            m_tex_id = 0;
         }
     }
 
@@ -241,8 +244,7 @@ private:
 };
 
 // -----------------------------------------------------------------------------
-// ------------------------------- Pimpl Pattern
-// -------------------------------
+// ------------------------------- Pimpl Pattern -------------------------------
 // -----------------------------------------------------------------------------
 template <typename T>
 GpuImage<T>::GpuImage() : m_impl(std::make_unique<Impl>()) {}

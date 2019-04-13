@@ -1,5 +1,5 @@
-#ifndef FLOAT16_H_190330
-#define FLOAT16_H_190330
+#ifndef OGLW_FLOAT16_H_190330
+#define OGLW_FLOAT16_H_190330
 
 namespace oglw {
 

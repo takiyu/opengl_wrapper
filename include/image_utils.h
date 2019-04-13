@@ -1,5 +1,5 @@
-#ifndef IMAGE_UTILS_H_190330
-#define IMAGE_UTILS_H_190330
+#ifndef OGLW_IMAGE_UTILS_H_190330
+#define OGLW_IMAGE_UTILS_H_190330
 
 namespace oglw {
 

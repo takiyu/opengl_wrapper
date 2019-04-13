@@ -8,8 +8,10 @@
 
 namespace oglw {
 
-template <typename T> class CpuImage;
-template <typename T> class GpuImage;
+template <typename T>
+class CpuImage;
+template <typename T>
+class GpuImage;
 
 // ================================= Image Base ================================
 class Image {

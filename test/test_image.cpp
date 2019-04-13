@@ -2,6 +2,9 @@
 
 #include "image.h"
 #include "image_utils.h"
+#include "gl_utils.h"
+
+#include "gl_window.h"
 
 #include <iostream>
 #include <chrono>
@@ -55,6 +58,7 @@ bool CheckAllByPtr(T& img) {
 TEST_CASE("Image test") {
 
     SECTION("Image Instances") {
+        oglw::GlWindow win("Title");
         oglw::CpuImage<uint8_t> cpu_img_8u;
         oglw::CpuImage<oglw::Float16> cpu_img_16f;
         oglw::CpuImage<float> cpu_img_32f;
@@ -236,6 +240,7 @@ TEST_CASE("Image test") {
 
 // =============================================================================
     SECTION("GpuImage Basic 1ch") {
+        oglw::GlWindow win("Title");
         oglw::CpuImage<uint8_t> cpu_img1(10, 20, 1);
         SetAll(cpu_img1);
         oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
@@ -244,6 +249,7 @@ TEST_CASE("Image test") {
     }
 
     SECTION("GpuImage Basic 2ch") {
+        oglw::GlWindow win("Title");
         oglw::CpuImage<uint8_t> cpu_img1(10, 20, 2);
         SetAll(cpu_img1);
         oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
@@ -252,6 +258,7 @@ TEST_CASE("Image test") {
     }
 
     SECTION("GpuImage Basic 3ch") {
+        oglw::GlWindow win("Title");
         oglw::CpuImage<uint8_t> cpu_img1(10, 20, 3);
         SetAll(cpu_img1);
         oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
@@ -260,6 +267,7 @@ TEST_CASE("Image test") {
     }
 
     SECTION("GpuImage Basic 4ch") {
+        oglw::GlWindow win("Title");
         oglw::CpuImage<uint8_t> cpu_img1(10, 20, 4);
         SetAll(cpu_img1);
         oglw::GpuImage<uint8_t> gpu_img = cpu_img1.toGpu();
@@ -268,6 +276,7 @@ TEST_CASE("Image test") {
     }
 
     SECTION("GpuImage float16") {
+        oglw::GlWindow win("Title");
         oglw::CpuImage<oglw::Float16> cpu_img1(10, 20, 4);
         SetAll(cpu_img1);
         oglw::GpuImage<oglw::Float16> gpu_img = cpu_img1.toGpu();
@@ -276,6 +285,7 @@ TEST_CASE("Image test") {
     }
 
     SECTION("GpuImage float32") {
+        oglw::GlWindow win("Title");
         oglw::CpuImage<float> cpu_img1(10, 20, 4);
         SetAll(cpu_img1);
         oglw::GpuImage<float> gpu_img = cpu_img1.toGpu();
