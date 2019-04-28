@@ -106,8 +106,9 @@ list(APPEND OGLW_LIBRARY ${GLAD_LIBRARIES})
 
 # oglw.so
 add_library(oglw ${LINK_TYPE}
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/image_cpu.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/image_gpu.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gpu_image.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpu_image.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gpu_buffer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/gpu_shader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/gl_utils.cpp
 )

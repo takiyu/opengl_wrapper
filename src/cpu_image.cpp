@@ -1,4 +1,4 @@
-#include "image.h"
+#include <oglw/image.h>
 
 #include "fast_array.h"
 

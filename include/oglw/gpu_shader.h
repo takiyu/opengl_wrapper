@@ -5,17 +5,18 @@
 #include <memory>
 #include <vector>
 
-#include "image.h"
+#include <oglw/image.h>
 
 namespace oglw {
+
+enum class ShaderType {
+    VERTEX,
+    FRAGMENT,
+};
 
 // ================================ GPU Shader =================================
 class GpuShader {
 public:
-    enum ShaderType {
-        VERTEX, FRAGMENT
-    };
-
     GpuShader();
 
     GpuShader(const GpuShader&) = delete;  // non-copyable
@@ -37,14 +38,17 @@ public:
     void setUniform(const std::string& name, const std::array<float, 9>& v);
     void setUniform(const std::string& name, const std::array<float, 16>& v);
 
-    void run() const;
+    template <typename T>
+    void setUniform(const std::string& name, const GpuImage<T>& gpu_img) {
+        setUniform(name, gpu_img.getTextureId());
+    }
+
+    void use() const;
 
 private:
     class Impl;
     std::unique_ptr<Impl> m_impl;
 };
-
-// ------------------------------ Specialization -------------------------------
 
 }  // namespace oglw
 

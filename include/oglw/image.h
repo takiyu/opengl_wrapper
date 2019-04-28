@@ -4,7 +4,7 @@
 #include <functional>
 #include <memory>
 
-#include "float16.h"
+#include <oglw/float16.h>
 
 namespace oglw {
 
@@ -94,7 +94,7 @@ public:
     virtual size_t getHeight() const override;
     virtual size_t getDepth() const override;
 
-    void bindTexture() const;
+    int getTextureId() const;
 
 private:
     class Impl;

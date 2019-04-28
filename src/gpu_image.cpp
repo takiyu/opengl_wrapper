@@ -1,4 +1,4 @@
-#include "image.h"
+#include <oglw/image.h>
 
 #include <glad/glad.h>
 
@@ -7,7 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "image_utils.h"
+#include <oglw/image_utils.h>
 
 namespace oglw {
 
@@ -226,8 +226,8 @@ public:
     }
 
     // -------------------------------------------------------------------------
-    void bindTexture() const {
-        glBindTexture(GL_TEXTURE_2D, m_tex_id);
+    int getTextureId() const {
+        return static_cast<int>(m_tex_id);
     }
 
     // -------------------------------------------------------------------------
@@ -236,10 +236,13 @@ private:
         if (!empty()) {
             glDeleteTextures(1, &m_tex_id);
             m_tex_id = 0;
+            m_w = 0;
+            m_h = 0;
+            m_d = 0;
         }
     }
 
-    size_t m_w, m_h, m_d;
+    size_t m_w = 0, m_h = 0, m_d = 0;
     GLuint m_tex_id = 0;
 };
 
@@ -311,8 +314,8 @@ size_t GpuImage<T>::getDepth() const {
 
 // -----------------------------------------------------------------------------
 template <typename T>
-void GpuImage<T>::bindTexture() const {
-    m_impl->bindTexture();
+int GpuImage<T>::getTextureId() const {
+    return m_impl->getTextureId();
 }
 
 // -----------------------------------------------------------------------------

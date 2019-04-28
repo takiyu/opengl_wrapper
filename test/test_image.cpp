@@ -1,8 +1,8 @@
 #include "catch2/catch.hpp"
 
-#include "image.h"
-#include "image_utils.h"
-#include "gl_utils.h"
+#include <oglw/image.h>
+#include <oglw/image_utils.h>
+#include <oglw/gl_utils.h>
 
 #include "gl_window.h"
 

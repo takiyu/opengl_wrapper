@@ -1,4 +1,4 @@
-#include <oglw/gpu_shader.h>
+#include <oglw/geometry.h>
 
 #include <oglw/gl_utils.h>
 
@@ -16,27 +16,30 @@ namespace {
 
 // -----------------------------------------------------------------------------
 
-const std::map<ShaderType, GLenum> SHADER_TYPE_MAP = {
-        {ShaderType::VERTEX, GL_VERTEX_SHADER},
-        {ShaderType::FRAGMENT, GL_FRAGMENT_SHADER},
+const std::map<Geometry::ShaderType, GLenum> SHADER_TYPE_MAP = {
+    {Geometry::VERTEX, GL_VERTEX_SHADER},
+    {Geometry::FRAGMENT, GL_FRAGMENT_SHADER},
 };
 
-const std::map<ShaderType, std::string> DEFAULT_SHADER = {
-        {ShaderType::VERTEX,
-         "#version 430\n"
-         "layout (location=0) in vec3 vertex_pos;\n"
-         "out vec2 frag_pos;\n"
-         "void main() {\n"
-         "    gl_Position = vec4(vertex_pos, 1.0);\n"
-         "    frag_pos = vertex_pos.xy;\n"
-         "}\n"},
-        {ShaderType::FRAGMENT,
-         "#version 430\n"
-         "in vec2 frag_pos;\n"
-         "layout (location=0) out vec4 FragColor;\n"
-         "void main() {\n"
-         "    FragColor = vec4(frag_pos, 0.0, 0.0);\n"
-         "}\n"},
+const std::map<Geometry::ShaderType, std::string> DEFAULT_SHADER = {
+    {
+        Geometry::VERTEX,
+            "#version 430\n"
+            "layout (location=0) in vec3 vertex_pos;\n"
+            "out vec2 frag_pos;\n"
+            "void main() {\n"
+            "    gl_Position = vec4(vertex_pos, 1.0);\n"
+            "    frag_pos = vertex_pos.xy;\n"
+            "}\n"
+    }, {
+        Geometry::FRAGMENT,
+            "#version 430\n"
+            "in vec2 frag_pos;\n"
+            "layout (location=0) out vec4 FragColor;\n"
+            "void main() {\n"
+            "    FragColor = vec4(frag_pos, 0.0, 0.0);\n"
+            "}\n"
+    },
 };
 
 // -----------------------------------------------------------------------------
@@ -64,14 +67,16 @@ void CheckGlslError(GLuint handler, GLenum type, const std::string& tag,
     }
 }
 
-void AttachShader(GLuint program, ShaderType type, const std::string& source) {
+void AttachShader(GLuint program, Geometry::ShaderType type,
+                  const std::string& source) {
     // Create shader
     const GLenum gl_shader_type = SHADER_TYPE_MAP.at(type);
     GLuint shader = glCreateShader(gl_shader_type);
 
     // Switch for default source
     const char* c_code =
-            source.empty() ? DEFAULT_SHADER.at(type).c_str() : source.c_str();
+        source.empty() ? DEFAULT_SHADER.at(type).c_str()
+                       : source.c_str();
 
     // Compile
     OGLW_CHECK(glShaderSource, shader, 1, &c_code, nullptr);
@@ -133,9 +138,9 @@ GLuint CreateQuadPositionVAO(const GLuint vbo) {
 
 }  // namespace
 
-// ================================= GPU Shader ================================
+// ================================ GPU Geometry ===============================
 
-class GpuShader::Impl {
+class Geometry::Impl {
 public:
     Impl() {}
 
@@ -152,58 +157,26 @@ public:
     }
 
     // -------------------------------------------------------------------------
-    void attach(ShaderType type, const std::string& source) {
-        // If no programs, create first.
-        if (!m_program) {
-            m_program = glCreateProgram();
-        }
-
-        // Attach
-        AttachShader(m_program, type, source);
+    void setVertices(const float *vtx_array, size_t n) {
+        m_impl->setVertices(vtx_array, n);
     }
 
-    void link() {
-        // Link
-        LinkProgram(m_program);
+    void setIndices(const float *idx_array, size_t n) {
+        m_impl->setIndices(idx_array, n);
+    }
 
+    // -------------------------------------------------------------------------
+    void setShader(const GpuShader& shader) {
+        m_impl->setShader(shader);
+    }
+
+    void draw(PrimitiveType prim_type) const {
         // Create Vertex Buffer Object for positions
         m_vbo = CreateQuadPositionVBO();
 
         // Vertex Array Object
         m_vao = CreateQuadPositionVAO(m_vbo);
-    }
 
-    // -------------------------------------------------------------------------
-    void setUniform(const std::string& name, bool v) {
-        glUniform1i(obtainUniformLocation(name), v);
-    }
-    void setUniform(const std::string& name, int v) {
-        glUniform1i(obtainUniformLocation(name), v);
-    }
-    void setUniform(const std::string& name, unsigned int v) {
-        glUniform1ui(obtainUniformLocation(name), v);
-    }
-    void setUniform(const std::string& name, float v) {
-        glUniform1f(obtainUniformLocation(name), v);
-    }
-    void setUniform(const std::string& name, const std::array<float, 2>& v) {
-        glUniform2fv(obtainUniformLocation(name), 1, v.data());
-    }
-    void setUniform(const std::string& name, const std::array<float, 3>& v) {
-        glUniform3fv(obtainUniformLocation(name), 1, v.data());
-    }
-    void setUniform(const std::string& name, const std::array<float, 4>& v) {
-        glUniform4fv(obtainUniformLocation(name), 1, v.data());
-    }
-    void setUniform(const std::string& name, const std::array<float, 9>& v) {
-        glUniformMatrix3fv(obtainUniformLocation(name), 1, GL_FALSE, v.data());
-    }
-    void setUniform(const std::string& name, const std::array<float, 16>& v) {
-        glUniformMatrix4fv(obtainUniformLocation(name), 1, GL_FALSE, v.data());
-    }
-
-    // -------------------------------------------------------------------------
-    void use() const {
         OGLW_CHECK(glClear, GL_COLOR_BUFFER_BIT);
         OGLW_CHECK(glClearColor, 0.3, 0.3, 1.0, 1.0);
 
@@ -233,89 +206,40 @@ private:
         }
     }
 
-    GLint obtainUniformLocation(const std::string& name) {
-        if (m_uniform_locs.count(name) == 0) {
-            m_uniform_locs[name] =
-                    glGetUniformLocation(m_program, name.c_str());
-        }
-        const GLint loc = m_uniform_locs.at(name);
-        if (loc < 0) {
-            throw std::runtime_error("Set uniform error: " + name);
-        }
-        return loc;
-    }
-
-    GLuint m_program = 0;
     GLuint m_vbo = 0;
     GLuint m_vao = 0;
+
     std::map<std::string, GLint> m_uniform_locs;  // name -> location
 };
 
 // -----------------------------------------------------------------------------
 // ------------------------------- Pimpl Pattern -------------------------------
 // -----------------------------------------------------------------------------
-GpuShader::GpuShader() : m_impl(std::make_unique<Impl>()) {}
+Geometry::Geometry() : m_impl(std::make_unique<Impl>()) {}
 
-GpuShader::GpuShader(GpuShader&&) = default;
+Geometry::Geometry(Geometry&&) = default;
 
-GpuShader& GpuShader::operator=(GpuShader&&) = default;
+Geometry& Geometry::operator=(Geometry&&) = default;
 
-GpuShader::~GpuShader() = default;
+Geometry::~Geometry() = default;
 
 // -----------------------------------------------------------------------------
-void GpuShader::attach(ShaderType type, const std::string& source) {
-    m_impl->attach(type, source);
+void Geometry::setVertices(const float *vtx_array, size_t n) {
+    m_impl->setVertices(vtx_array, n);
 }
 
-void GpuShader::link() {
-    m_impl->link();
-}
-
-// -------------------------------------------------------------------------
-void GpuShader::setUniform(const std::string& name, bool v) {
-    m_impl->setUniform(name, v);
-}
-
-void GpuShader::setUniform(const std::string& name, int v) {
-    m_impl->setUniform(name, v);
-}
-
-void GpuShader::setUniform(const std::string& name, unsigned int v) {
-    m_impl->setUniform(name, v);
-}
-
-void GpuShader::setUniform(const std::string& name, float v) {
-    m_impl->setUniform(name, v);
-}
-
-void GpuShader::setUniform(const std::string& name,
-                           const std::array<float, 2>& v) {
-    m_impl->setUniform(name, v);
-}
-
-void GpuShader::setUniform(const std::string& name,
-                           const std::array<float, 3>& v) {
-    m_impl->setUniform(name, v);
-}
-
-void GpuShader::setUniform(const std::string& name,
-                           const std::array<float, 4>& v) {
-    m_impl->setUniform(name, v);
-}
-
-void GpuShader::setUniform(const std::string& name,
-                           const std::array<float, 9>& v) {
-    m_impl->setUniform(name, v);
-}
-
-void GpuShader::setUniform(const std::string& name,
-                           const std::array<float, 16>& v) {
-    m_impl->setUniform(name, v);
+void Geometry::setIndices(const float *idx_array, size_t n) {
+    m_impl->setIndices(idx_array, n);
 }
 
 // -------------------------------------------------------------------------
-void GpuShader::use() const {
-    m_impl->use();
+void Geometry::setShader(const GpuShader& shader) {
+    m_impl->setShader(shader);
+}
+
+void Geometry::draw(PrimitiveType prim_type) const {
+    m_impl->draw(prim_type);
 }
 
 }  // namespace oglw
+
