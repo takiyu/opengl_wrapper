@@ -101,36 +101,6 @@ void LinkProgram(GLuint program) {
 
 // -----------------------------------------------------------------------------
 
-GLuint CreateQuadPositionVBO() {
-    GLuint vbo_position;
-    OGLW_CHECK(glGenBuffers, 1, &vbo_position);
-
-    const float POS_DATA[] = {
-            -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 1.0f,  1.0f, 0.0f,
-            -1.0f, -1.0f, 0.0f, 1.0f, 1.0f,  0.0f, -1.0f, 1.0f, 0.0f,
-    };
-
-    OGLW_CHECK(glBindBuffer, GL_ARRAY_BUFFER, vbo_position);
-    OGLW_CHECK(glBufferData, GL_ARRAY_BUFFER, 9 * sizeof(float) * 2, POS_DATA,
-               GL_STATIC_DRAW);
-
-    return vbo_position;
-}
-
-GLuint CreateQuadPositionVAO(const GLuint vbo) {
-    GLuint vao;
-    OGLW_CHECK(glGenVertexArrays, 1, &vao);
-    OGLW_CHECK(glBindVertexArray, vao);
-    OGLW_CHECK(glEnableVertexAttribArray, 0);
-    OGLW_CHECK(glBindBuffer, GL_ARRAY_BUFFER, vbo);
-    OGLW_CHECK(glVertexAttribPointer, 0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    OGLW_CHECK(glBindVertexArray, 0);
-    return vao;
-}
-
-// -----------------------------------------------------------------------------
-
 }  // namespace
 
 // ================================= GPU Shader ================================
@@ -165,12 +135,6 @@ public:
     void link() {
         // Link
         LinkProgram(m_program);
-
-        // Create Vertex Buffer Object for positions
-        m_vbo = CreateQuadPositionVBO();
-
-        // Vertex Array Object
-        m_vao = CreateQuadPositionVAO(m_vbo);
     }
 
     // -------------------------------------------------------------------------
@@ -204,29 +168,12 @@ public:
 
     // -------------------------------------------------------------------------
     void use() const {
-        OGLW_CHECK(glClear, GL_COLOR_BUFFER_BIT);
-        OGLW_CHECK(glClearColor, 0.3, 0.3, 1.0, 1.0);
-
         OGLW_CHECK(glUseProgram, m_program);
-
-        OGLW_CHECK(glBindVertexArray, m_vao);
-        OGLW_CHECK(glDrawArrays, GL_TRIANGLES, 0, 6);
-        OGLW_CHECK(glBindVertexArray, 0);
-
-        OGLW_CHECK(glUseProgram, 0);
     }
 
     // -------------------------------------------------------------------------
 private:
     void release() {
-        if (m_vao) {
-            OGLW_CHECK(glDeleteVertexArrays, 1, &m_vao);
-            m_vao = 0;
-        }
-        if (m_vbo) {
-            OGLW_CHECK(glDeleteBuffers, 1, &m_vbo);
-            m_vbo = 0;
-        }
         if (m_program) {
             OGLW_CHECK(glDeleteProgram, m_program);
             m_program = 0;
@@ -246,8 +193,6 @@ private:
     }
 
     GLuint m_program = 0;
-    GLuint m_vbo = 0;
-    GLuint m_vao = 0;
     std::map<std::string, GLint> m_uniform_locs;  // name -> location
 };
 

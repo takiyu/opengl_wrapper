@@ -5,7 +5,7 @@
 
 namespace oglw {
 
-enum class BufferTargetType {
+enum class BufferType {
     ARRAY,
     INDEX,
 };
@@ -15,13 +15,25 @@ enum class BufferUsageType {
     STATIC_DRAW,
 };
 
+// ============================== GPU Buffer Base ==============================
+class GpuBufferBase {
+public:
+    virtual ~GpuBufferBase() {}
+    virtual size_t getNumElem() const = 0;
+    virtual size_t getElemSize() const = 0;
+    virtual size_t getByteSize() const = 0;
+    virtual const std::type_info* getDataType() const = 0;
+    virtual BufferType getBufferType() const = 0;
+    virtual BufferUsageType getBufferUsageType() const = 0;
+    virtual unsigned int getBufferId() const = 0;
+};
+
 // ================================ GPU Buffer =================================
-template <typename T>
-class GpuBuffer {
+template <typename T, BufferType B>
+class GpuBuffer : public GpuBufferBase {
 public:
     GpuBuffer();
     GpuBuffer(size_t n_elem, size_t elem_size,
-              BufferTargetType tgt_type = BufferTargetType::ARRAY,
               BufferUsageType type = BufferUsageType::DYNAMIC_DRAW);
 
     GpuBuffer(const GpuBuffer&);
@@ -31,26 +43,34 @@ public:
     virtual ~GpuBuffer();
 
     void init(size_t n_elem, size_t elem_size,
-              BufferTargetType tgt_type = BufferTargetType::ARRAY,
               BufferUsageType type = BufferUsageType::DYNAMIC_DRAW);
     void sendData(const T* array);
 
-    size_t getNumElem() const;
-    size_t getElemSize() const;
-    size_t getByteSize() const;
-    BufferTargetType getBufferTargetType() const;
-    BufferUsageType getBufferUsageType() const;
+    virtual size_t getNumElem() const;
+    virtual size_t getElemSize() const;
+    virtual size_t getByteSize() const;
 
-    int getBufferId() const;
+    virtual const std::type_info* getDataType() const;
+    virtual BufferType getBufferType() const;
+    virtual BufferUsageType getBufferUsageType() const;
+
+    virtual unsigned int getBufferId() const;
 
 private:
     class Impl;
     std::unique_ptr<Impl> m_impl;
 };
 
+// ---------------------------------- Aliases ----------------------------------
+template <typename T>
+using GpuArrayBuffer = GpuBuffer<T, BufferType::ARRAY>;
+using GpuIndexBuffer = GpuBuffer<unsigned int, BufferType::ARRAY>;
+
 // ------------------------------ Specialization -------------------------------
-template class GpuBuffer<float>;
-template class GpuBuffer<int>;
+template class GpuBuffer<float, BufferType::ARRAY>;
+template class GpuBuffer<int, BufferType::ARRAY>;
+template class GpuBuffer<unsigned int, BufferType::ARRAY>;
+template class GpuBuffer<unsigned int, BufferType::INDEX>;
 
 }  // namespace oglw
 

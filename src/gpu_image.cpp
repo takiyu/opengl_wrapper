@@ -7,6 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 
+#include <oglw/gl_utils.h>
 #include <oglw/image_utils.h>
 
 namespace oglw {
@@ -107,9 +108,9 @@ inline void CopyTexture(GLuint src_tex_id, GLuint dst_tex_id, GLsizei src_w,
                         GLint src_y = 0, GLint src_z = 0, GLint dst_x = 0,
                         GLint dst_y = 0, GLint dst_z = 0) {
     if (0 < src_w && 0 < src_h && 0 < src_d) {
-        glCopyImageSubData(src_tex_id, GL_TEXTURE_2D, 0, src_x, src_y, src_z,
-                           dst_tex_id, GL_TEXTURE_2D, 0, dst_x, dst_y, dst_z,
-                           src_w, src_h, src_d);
+        OGLW_CHECK(glCopyImageSubData, src_tex_id, GL_TEXTURE_2D, 0, src_x,
+                   src_y, src_z, dst_tex_id, GL_TEXTURE_2D, 0, dst_x, dst_y,
+                   dst_z, src_w, src_h, src_d);
     }
 }
 
@@ -157,18 +158,18 @@ public:
         }
 
         GLuint fbo_id;
-        glGenFramebuffers(1, &fbo_id);
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               GL_TEXTURE_2D, m_tex_id, 0);
+        OGLW_CHECK(glGenFramebuffers, 1, &fbo_id);
+        OGLW_CHECK(glBindFramebuffer, GL_FRAMEBUFFER, fbo_id);
+        OGLW_CHECK(glFramebufferTexture2D, GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                   GL_TEXTURE_2D, m_tex_id, 0);
 
         CpuImage<T> cpu_img(m_w, m_h, m_d);
 
-        glPixelStorei(GL_PACK_ALIGNMENT, GetGlStoreSize(m_d));
-        glReadPixels(0, 0, m_w, m_h, GetGlFmt(m_d), GetGlType<T>(),
-                     cpu_img.data());
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glDeleteFramebuffers(1, &fbo_id);
+        OGLW_CHECK(glPixelStorei, GL_PACK_ALIGNMENT, GetGlStoreSize(m_d));
+        OGLW_CHECK(glReadPixels, 0, 0, m_w, m_h, GetGlFmt(m_d), GetGlType<T>(),
+                   cpu_img.data());
+        OGLW_CHECK(glBindFramebuffer, GL_FRAMEBUFFER, 0);
+        OGLW_CHECK(glDeleteFramebuffers, 1, &fbo_id);
 
         return std::move(cpu_img);
     }
@@ -178,9 +179,9 @@ public:
         if (!IsSameSize(*this, cpu_img)) {
             init(cpu_img.getWidth(), cpu_img.getHeight(), cpu_img.getDepth());
         }
-        glPixelStorei(GL_UNPACK_ALIGNMENT, GetGlStoreSize(m_d));
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_w, m_h, GetGlFmt(m_d),
-                        GetGlType<T>(), cpu_img.data());
+        OGLW_CHECK(glPixelStorei, GL_UNPACK_ALIGNMENT, GetGlStoreSize(m_d));
+        OGLW_CHECK(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, m_w, m_h,
+                   GetGlFmt(m_d), GetGlType<T>(), cpu_img.data());
     }
 
     // -------------------------------------------------------------------------
@@ -198,15 +199,18 @@ public:
         }
 
         // Create
-        glGenTextures(1, &m_tex_id);
-        glBindTexture(GL_TEXTURE_2D, m_tex_id);
-        glTexStorage2D(GL_TEXTURE_2D, 1, GetGlInternalFmt<T>(d), w, h);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        OGLW_CHECK(glGenTextures, 1, &m_tex_id);
+        OGLW_CHECK(glBindTexture, GL_TEXTURE_2D, m_tex_id);
+        OGLW_CHECK(glTexStorage2D, GL_TEXTURE_2D, 1, GetGlInternalFmt<T>(d), w,
+                   h);
+        OGLW_CHECK(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                   GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        // OGLW_CHECK(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+        // GL_LINEAR); OGLW_CHECK(glTexParameteri, GL_TEXTURE_2D,
+        // GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        OGLW_CHECK(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        OGLW_CHECK(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     }
 
     bool empty() const {

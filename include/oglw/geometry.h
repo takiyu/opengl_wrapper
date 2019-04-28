@@ -3,12 +3,14 @@
 
 #include <memory>
 
+#include <oglw/gpu_buffer.h>
 #include <oglw/gpu_shader.h>
 
 namespace oglw {
 
 enum class PrimitiveType {
-    TRIANGLE, LINE,
+    TRIANGLE,
+    LINE,
 };
 
 // =============================== GPU Geometry ================================
@@ -22,11 +24,12 @@ public:
     Geometry& operator=(Geometry&&);
     virtual ~Geometry();
 
-    void setVertices(const float *vtx_array, size_t n);
-    void setIndices(const float *idx_array, size_t n);
+    void setArrayBuffer(const std::shared_ptr<GpuBufferBase> array_buf,
+                        unsigned int index);
+    void setIndexBuffer(const std::shared_ptr<GpuIndexBuffer> index_buf);
 
-    void setShader(const GpuShader& shader);
-    void draw(PrimitiveType prim_type) const;
+    void setShader(const std::shared_ptr<GpuShader> shader);
+    void draw(PrimitiveType prim_type);
 
 private:
     class Impl;

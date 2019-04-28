@@ -15,123 +15,37 @@ namespace oglw {
 namespace {
 
 // -----------------------------------------------------------------------------
-
-const std::map<Geometry::ShaderType, GLenum> SHADER_TYPE_MAP = {
-    {Geometry::VERTEX, GL_VERTEX_SHADER},
-    {Geometry::FRAGMENT, GL_FRAGMENT_SHADER},
-};
-
-const std::map<Geometry::ShaderType, std::string> DEFAULT_SHADER = {
-    {
-        Geometry::VERTEX,
-            "#version 430\n"
-            "layout (location=0) in vec3 vertex_pos;\n"
-            "out vec2 frag_pos;\n"
-            "void main() {\n"
-            "    gl_Position = vec4(vertex_pos, 1.0);\n"
-            "    frag_pos = vertex_pos.xy;\n"
-            "}\n"
-    }, {
-        Geometry::FRAGMENT,
-            "#version 430\n"
-            "in vec2 frag_pos;\n"
-            "layout (location=0) out vec4 FragColor;\n"
-            "void main() {\n"
-            "    FragColor = vec4(frag_pos, 0.0, 0.0);\n"
-            "}\n"
-    },
-};
-
-// -----------------------------------------------------------------------------
-
-// Check compile or link error
-template <typename IGetter, typename LogGetter>
-void CheckGlslError(GLuint handler, GLenum type, const std::string& tag,
-                    IGetter i_getter, LogGetter log_getter) {
-    // Check error
-    int result;
-    OGLW_CHECK(i_getter, handler, type, &result);
-    if (result == GL_FALSE) {
-        // Get message length
-        int len = 0;
-        OGLW_CHECK(i_getter, handler, GL_INFO_LOG_LENGTH, &len);
-        if (0 < len) {
-            // Get message
-            std::vector<char> c_log(static_cast<size_t>(len));
-            int written = 0;
-            OGLW_CHECK(log_getter, handler, len, &written, c_log.data());
-            throw std::runtime_error(tag + "\n" + c_log.data());
-        } else {
-            throw std::runtime_error(tag + "\n(no message)");
-        }
+GLenum GetGlPrimitive(PrimitiveType type) {
+    switch (type) {
+        case PrimitiveType::TRIANGLE: return GL_TRIANGLES;
+        case PrimitiveType::LINE: return GL_LINE;
     }
+    std::stringstream ss;
+    ss << "Invalid primitive type: \"" << static_cast<int>(type) << "\"";
+    throw std::runtime_error(ss.str());
 }
 
-void AttachShader(GLuint program, Geometry::ShaderType type,
-                  const std::string& source) {
-    // Create shader
-    const GLenum gl_shader_type = SHADER_TYPE_MAP.at(type);
-    GLuint shader = glCreateShader(gl_shader_type);
-
-    // Switch for default source
-    const char* c_code =
-        source.empty() ? DEFAULT_SHADER.at(type).c_str()
-                       : source.c_str();
-
-    // Compile
-    OGLW_CHECK(glShaderSource, shader, 1, &c_code, nullptr);
-    OGLW_CHECK(glCompileShader, shader);
-
-    // Error check
-    CheckGlslError(shader, GL_COMPILE_STATUS,
-                   "----------<< Shader Compile Error >>----------",
-                   glGetShaderiv, glGetShaderInfoLog);
-
-    // Attach
-    OGLW_CHECK(glAttachShader, program, shader);
-
-    // Delete
-    OGLW_CHECK(glDeleteShader, shader);
+GLenum GetGlType(const std::type_info* type) {
+    if (*type == typeid(float)) {
+        return GL_FLOAT;
+    } else if (*type == typeid(int)) {
+        return GL_INT;
+    } else if (*type == typeid(unsigned int)) {
+        return GL_UNSIGNED_INT;
+    }
+    std::stringstream ss;
+    ss << "Invalid type: \"" << type->name() << "\"";
+    throw std::runtime_error(ss.str());
 }
 
-void LinkProgram(GLuint program) {
-    // Link
-    OGLW_CHECK(glLinkProgram, program);
-
-    // Error check
-    CheckGlslError(program, GL_LINK_STATUS,
-                   "----------<< Program Link Error >>----------",
-                   glGetProgramiv, glGetProgramInfoLog);
-}
 
 // -----------------------------------------------------------------------------
-
-GLuint CreateQuadPositionVBO() {
-    GLuint vbo_position;
-    OGLW_CHECK(glGenBuffers, 1, &vbo_position);
-
-    const float POS_DATA[] = {
-            -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 1.0f,  1.0f, 0.0f,
-            -1.0f, -1.0f, 0.0f, 1.0f, 1.0f,  0.0f, -1.0f, 1.0f, 0.0f,
-    };
-
-    OGLW_CHECK(glBindBuffer, GL_ARRAY_BUFFER, vbo_position);
-    OGLW_CHECK(glBufferData, GL_ARRAY_BUFFER, 9 * sizeof(float) * 2, POS_DATA,
-               GL_STATIC_DRAW);
-
-    return vbo_position;
-}
-
-GLuint CreateQuadPositionVAO(const GLuint vbo) {
-    GLuint vao;
-    OGLW_CHECK(glGenVertexArrays, 1, &vao);
-    OGLW_CHECK(glBindVertexArray, vao);
-    OGLW_CHECK(glEnableVertexAttribArray, 0);
-    OGLW_CHECK(glBindBuffer, GL_ARRAY_BUFFER, vbo);
-    OGLW_CHECK(glVertexAttribPointer, 0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    OGLW_CHECK(glBindVertexArray, 0);
-    return vao;
+void UpdateAttribute(unsigned int index, const GpuBufferBase& array_buf,
+                     GLenum type) {
+    OGLW_CHECK(glEnableVertexAttribArray, index);
+    OGLW_CHECK(glBindBuffer, GL_ARRAY_BUFFER, array_buf.getBufferId());
+    OGLW_CHECK(glVertexAttribPointer, index, array_buf.getElemSize(), type,
+               GL_FALSE, 0, nullptr);
 }
 
 // -----------------------------------------------------------------------------
@@ -157,35 +71,68 @@ public:
     }
 
     // -------------------------------------------------------------------------
-    void setVertices(const float *vtx_array, size_t n) {
-        m_impl->setVertices(vtx_array, n);
+    void setArrayBuffer(const std::shared_ptr<GpuBufferBase> array_buf,
+                        unsigned int index) {
+        if (m_array_bufs.count(index) == 0) {
+            m_update_attrib = true;
+        }
+        m_array_bufs[index] = array_buf;
     }
 
-    void setIndices(const float *idx_array, size_t n) {
-        m_impl->setIndices(idx_array, n);
+    void setIndexBuffer(const std::shared_ptr<GpuIndexBuffer> index_buf) {
+        m_index_buffer = index_buf;
     }
 
     // -------------------------------------------------------------------------
-    void setShader(const GpuShader& shader) {
-        m_impl->setShader(shader);
+    void setShader(const std::shared_ptr<GpuShader> shader) {
+        m_shader = shader;
     }
 
-    void draw(PrimitiveType prim_type) const {
-        // Create Vertex Buffer Object for positions
-        m_vbo = CreateQuadPositionVBO();
+    void draw(PrimitiveType prim_type) {
+        // Create VAO
+        if (m_vao == 0) {
+            OGLW_CHECK(glGenVertexArrays, 1, &m_vao);
+            OGLW_CHECK(glBindVertexArray, m_vao);
+        }
 
-        // Vertex Array Object
-        m_vao = CreateQuadPositionVAO(m_vbo);
+        // Check vertex array
+        if (m_array_bufs.count(0) == 0 ||
+            *m_array_bufs[0]->getDataType() != typeid(float)) {
+            throw std::runtime_error("No floating vertex array");
+        }
 
-        OGLW_CHECK(glClear, GL_COLOR_BUFFER_BIT);
-        OGLW_CHECK(glClearColor, 0.3, 0.3, 1.0, 1.0);
+        // Update attributes
+        if (m_update_attrib) {
+            m_update_attrib = false;
+            for (auto& v : m_array_bufs) {
+                UpdateAttribute(v.first, *v.second,
+                                GetGlType(v.second->getDataType()));
+            }
+        }
 
-        OGLW_CHECK(glUseProgram, m_program);
+        // Use shader
+        if (!m_shader) {
+            throw std::runtime_error("No shader is set");
+        }
+        m_shader->use();
 
+        // Bind VAO
         OGLW_CHECK(glBindVertexArray, m_vao);
-        OGLW_CHECK(glDrawArrays, GL_TRIANGLES, 0, 6);
-        OGLW_CHECK(glBindVertexArray, 0);
 
+        // Draw
+        const GLenum gl_prim = GetGlPrimitive(prim_type);
+        if (m_index_buffer) {
+            const size_t size = m_index_buffer->getElemSize() *
+                                m_index_buffer->getNumElem();
+            OGLW_CHECK(glDrawElements, gl_prim, size, GL_UNSIGNED_INT, nullptr);
+        } else {
+            const size_t size = m_array_bufs[0]->getElemSize() *
+                                m_array_bufs[0]->getNumElem();
+            OGLW_CHECK(glDrawArrays, gl_prim, 0, size);
+        }
+
+        // Unbind
+        OGLW_CHECK(glBindVertexArray, 0);
         OGLW_CHECK(glUseProgram, 0);
     }
 
@@ -196,20 +143,18 @@ private:
             OGLW_CHECK(glDeleteVertexArrays, 1, &m_vao);
             m_vao = 0;
         }
-        if (m_vbo) {
-            OGLW_CHECK(glDeleteBuffers, 1, &m_vbo);
-            m_vbo = 0;
-        }
-        if (m_program) {
-            OGLW_CHECK(glDeleteProgram, m_program);
-            m_program = 0;
-        }
+        m_array_bufs.clear();  // All destructors will be called.
+        m_index_buffer = nullptr;
+        m_shader = nullptr;
     }
 
-    GLuint m_vbo = 0;
     GLuint m_vao = 0;
 
-    std::map<std::string, GLint> m_uniform_locs;  // name -> location
+    bool m_update_attrib = false;
+
+    std::map<unsigned int, std::shared_ptr<GpuBufferBase>> m_array_bufs;
+    std::shared_ptr<GpuIndexBuffer> m_index_buffer;
+    std::shared_ptr<GpuShader> m_shader;
 };
 
 // -----------------------------------------------------------------------------
@@ -224,22 +169,22 @@ Geometry& Geometry::operator=(Geometry&&) = default;
 Geometry::~Geometry() = default;
 
 // -----------------------------------------------------------------------------
-void Geometry::setVertices(const float *vtx_array, size_t n) {
-    m_impl->setVertices(vtx_array, n);
+void Geometry::setArrayBuffer(const std::shared_ptr<GpuBufferBase> array_buf,
+                              unsigned int index) {
+    m_impl->setArrayBuffer(array_buf, index);
 }
 
-void Geometry::setIndices(const float *idx_array, size_t n) {
-    m_impl->setIndices(idx_array, n);
+void Geometry::setIndexBuffer(const std::shared_ptr<GpuIndexBuffer> index_buf) {
+    m_impl->setIndexBuffer(index_buf);
 }
 
 // -------------------------------------------------------------------------
-void Geometry::setShader(const GpuShader& shader) {
+void Geometry::setShader(const std::shared_ptr<GpuShader> shader) {
     m_impl->setShader(shader);
 }
 
-void Geometry::draw(PrimitiveType prim_type) const {
+void Geometry::draw(PrimitiveType prim_type) {
     m_impl->draw(prim_type);
 }
 
 }  // namespace oglw
-
