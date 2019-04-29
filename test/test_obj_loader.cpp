@@ -41,7 +41,7 @@ TEST_CASE("ObjLoader test") {
                 "in vec2 frag_texcoord;\n"
                 "layout (location=0) out vec4 FragColor;\n"
                 "void main() {\n"
-                "    FragColor = vec4(frag_texcoord, 0.0, 0.0);\n"
+                "    FragColor = vec4(frag_normal, 0.0);\n"
                 "}\n";
 
         auto gpu_shader = oglw::GpuShader::Create();

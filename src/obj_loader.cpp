@@ -47,7 +47,6 @@ struct AttributeIndices {
 void LoadObj(const std::string& filename, std::vector<float>& vertices,
              std::vector<float>& normals, std::vector<float>& texcoords,
              std::map<std::string, AttributeIndices>& indices) {
-
     // Load with tinyobj
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -83,6 +82,117 @@ void LoadObj(const std::string& filename, std::vector<float>& vertices,
 }
 
 // -----------------------------------------------------------------------------
+void AccumulateNormalCounts(const std::vector<float>& vertices,
+                            const std::vector<unsigned int>& indices,
+                            std::vector<float>& normals,
+                            std::vector<int>& normal_cnts) {
+    for (size_t f_idx = 0; f_idx < indices.size() / 3; f_idx++) {
+        const unsigned int v_idxs[3] = {indices[3 * f_idx + 0],
+                                        indices[3 * f_idx + 1],
+                                        indices[3 * f_idx + 2]};
+
+        float vtxs[3][3];
+        for (size_t i = 0; i < 3; i++) {
+            for (size_t c_idx = 0; c_idx < 3; c_idx++) {
+                vtxs[i][c_idx] = vertices[3 * v_idxs[i] + c_idx];
+            }
+        }
+
+        float e0[3], e1[3];
+        for (size_t c_idx = 0; c_idx < 3; c_idx++) {
+            e0[c_idx] = vtxs[1][c_idx] - vtxs[0][c_idx];
+            e1[c_idx] = vtxs[2][c_idx] - vtxs[0][c_idx];
+        }
+
+        float n[3] = {e0[1] * e1[2] - e0[2] * e1[1],
+                      e0[2] * e1[0] - e0[0] * e1[2],
+                      e0[0] * e1[1] - e0[1] * e1[0]};
+        const float n_norm = std::sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+        for (size_t c_idx = 0; c_idx < 3; c_idx++) {
+            n[c_idx] /= n_norm;
+        }
+
+        for (size_t i = 0; i < 3; i++) {
+            normal_cnts[v_idxs[i]] += 1;
+            for (size_t c_idx = 0; c_idx < 3; c_idx++) {
+                normals[3 * v_idxs[i] + c_idx] += n[c_idx];
+            }
+        }
+    }
+}
+
+void ComputeGeometricNormals(
+        const std::vector<float>& vertices,
+        const std::map<std::string, AttributeIndices>& indices,
+        std::vector<float>& normals) {
+
+    // Initialize
+    normals.resize(vertices.size(), 0.f);
+    std::vector<int> normal_cnts(vertices.size() / 3, 0);
+
+    // Accumulate normals over shapes
+    for (auto&& v : indices) {
+        AccumulateNormalCounts(vertices, v.second.vertex, normals, normal_cnts);
+    }
+
+    // Normalize normals
+    for (size_t i = 0; i < normals.size() / 3; i++) {
+        if (normal_cnts[i] == 0) {
+            continue;
+        }
+        // Average
+        normals[3 * i + 0] /= static_cast<float>(normal_cnts[i]);
+        normals[3 * i + 1] /= static_cast<float>(normal_cnts[i]);
+        normals[3 * i + 2] /= static_cast<float>(normal_cnts[i]);
+
+        // Normalize
+        float n_norm = 0.f;
+        for (size_t c_idx = 0; c_idx < 3; c_idx++) {
+            n_norm += normals[3 * i + c_idx];
+        }
+        n_norm = std::sqrt(n_norm);
+        for (size_t c_idx = 0; c_idx < 3; c_idx++) {
+            normals[3 * i + c_idx] /= n_norm;
+        }
+    }
+}
+
+void CreateGeometryIndexingVtxOnly(
+        const std::vector<float>& vertices,
+        const std::map<std::string, AttributeIndices>& indices,
+        std::map<std::string, GeometryPtr>& geoms) {
+    const size_t n_vtxs = vertices.size() / 3;
+
+    // Vertex buffer
+    auto vertex_buf = GpuArrayBuffer<float>::Create(n_vtxs, 3);
+    vertex_buf->sendData(vertices.data());
+
+    // Geometric normals
+    std::vector<float> normals;
+    ComputeGeometricNormals(vertices, indices, normals);
+
+    // Normal buffer
+    auto normal_buf = GpuArrayBuffer<float>::Create(n_vtxs, 3);
+    normal_buf->sendData(normals.data());
+
+    for (auto& v : indices) {
+        // Create index buffer
+        auto vtx_idxs = v.second.vertex;
+        auto index_buf = GpuIndexBuffer::Create(vtx_idxs.size(), 1);
+        index_buf->sendData(vtx_idxs.data());
+
+        // Create Geometry (no texcoords)
+        auto geom = Geometry::Create();
+        geom->setArrayBuffer(vertex_buf, 0);
+        geom->setArrayBuffer(normal_buf, 1);
+        geom->setIndexBuffer(index_buf);
+
+        // Register
+        geoms[v.first] = geom;
+    }
+}
+
+// -----------------------------------------------------------------------------
 void ShiftVertices(std::vector<float>& vtxs,
                    const std::array<float, 3>& shift) {
     for (size_t v_idx = 0; v_idx < vtxs.size() / 3; v_idx++) {
@@ -95,8 +205,9 @@ void ShiftVertices(std::vector<float>& vtxs,
 }  // namespace
 
 // ================================= Obj Loader ================================
-void LoadObj(const std::string& filename, std::map<std::string, GeometryPtr>& geoms,
-             ObjLoaderMode mode, const std::array<float, 3>& shift) {
+void LoadObj(const std::string& filename,
+             std::map<std::string, GeometryPtr>& geoms, ObjLoaderMode mode,
+             const std::array<float, 3>& shift) {
     // Load basic informations
     std::vector<float> vertices, normals, texcoords;
     std::map<std::string, AttributeIndices> indices;
@@ -105,31 +216,13 @@ void LoadObj(const std::string& filename, std::map<std::string, GeometryPtr>& ge
     // Apply shift
     ShiftVertices(vertices, shift);
 
-    const size_t n_vtxs = vertices.size() / 3;
-
     if (mode == ObjLoaderMode::INDEXING) {
         // Indexing
         throw std::runtime_error("Not implemented");
 
     } else if (mode == ObjLoaderMode::INDEXING_VTX_ONLY) {
         // Indexing with only vertices
-        auto vertex_buf = GpuArrayBuffer<float>::Create(n_vtxs, 3);
-        vertex_buf->sendData(vertices.data());
-
-        for (auto& v : indices) {
-            // Create index buffer
-            auto vtx_idxs = v.second.vertex;
-            auto index_buf = GpuIndexBuffer::Create(vtx_idxs.size(), 1);
-            index_buf->sendData(vtx_idxs.data());
-
-            // Create Geometry
-            auto geom = Geometry::Create();
-            geom->setArrayBuffer(vertex_buf, 0);
-            geom->setIndexBuffer(index_buf);
-
-            // Register
-            geoms[v.first] = geom;
-        }
+        CreateGeometryIndexingVtxOnly(vertices, indices, geoms);
     } else if (mode == ObjLoaderMode::NO_INDICING) {
         // No indexing
         throw std::runtime_error("Not implemented");
