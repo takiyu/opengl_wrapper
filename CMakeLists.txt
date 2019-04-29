@@ -100,6 +100,9 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/glad)
 list(APPEND OGLW_INCLUDE ${GLAD_INCLUDE_DIRS})
 list(APPEND OGLW_LIBRARY ${GLAD_LIBRARIES})
 
+# TinyObjLoader
+list(APPEND OGLW_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
+
 # ------------------------------------------------------------------------------
 # ----------------------------- Internal Libraries -----------------------------
 # ------------------------------------------------------------------------------
@@ -111,6 +114,7 @@ add_library(oglw ${LINK_TYPE}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/gpu_buffer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/gpu_shader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/geometry.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/obj_loader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/gl_utils.cpp
 )
 
@@ -141,7 +145,8 @@ if (OGLW_BUILD_TESTS)
         ${CMAKE_CURRENT_SOURCE_DIR}/test/gl_window.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/test/test_image.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/test/test_fast_array.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/test_effect.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/test_geometry.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/test_obj_loader.cpp
     )
     setup_target(oglw_test "${OGLW_INCLUDE};${OGLW_TEST_INCLUDE}"
                  "${OGLW_LIBRARY};${OGLW_TEST_LIBRARY}")

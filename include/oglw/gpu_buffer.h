@@ -33,7 +33,7 @@ template <typename T, BufferType B>
 class GpuBuffer : public GpuBufferBase {
 public:
     GpuBuffer();
-    GpuBuffer(size_t n_elem, size_t elem_size,
+    GpuBuffer(size_t n_elem, size_t elem_size = 1,
               BufferUsageType type = BufferUsageType::DYNAMIC_DRAW);
 
     GpuBuffer(const GpuBuffer&);
@@ -42,7 +42,7 @@ public:
     GpuBuffer& operator=(GpuBuffer&&);
     virtual ~GpuBuffer();
 
-    void init(size_t n_elem, size_t elem_size,
+    void init(size_t n_elem, size_t elem_size = 1,
               BufferUsageType type = BufferUsageType::DYNAMIC_DRAW);
     void sendData(const T* array);
 

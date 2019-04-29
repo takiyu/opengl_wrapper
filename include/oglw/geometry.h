@@ -11,6 +11,7 @@ namespace oglw {
 enum class PrimitiveType {
     TRIANGLE,
     LINE,
+    POINT,
 };
 
 // =============================== GPU Geometry ================================
@@ -29,7 +30,7 @@ public:
     void setIndexBuffer(const std::shared_ptr<GpuIndexBuffer> index_buf);
 
     void setShader(const std::shared_ptr<GpuShader> shader);
-    void draw(PrimitiveType prim_type);
+    void draw(PrimitiveType prim_type, float prim_size = 1.f);
 
 private:
     class Impl;

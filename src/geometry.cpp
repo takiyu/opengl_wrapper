@@ -18,7 +18,8 @@ namespace {
 GLenum GetGlPrimitive(PrimitiveType type) {
     switch (type) {
         case PrimitiveType::TRIANGLE: return GL_TRIANGLES;
-        case PrimitiveType::LINE: return GL_LINE;
+        case PrimitiveType::LINE: return GL_LINES;
+        case PrimitiveType::POINT: return GL_POINTS;
     }
     std::stringstream ss;
     ss << "Invalid primitive type: \"" << static_cast<int>(type) << "\"";
@@ -38,6 +39,14 @@ GLenum GetGlType(const std::type_info* type) {
     throw std::runtime_error(ss.str());
 }
 
+// -----------------------------------------------------------------------------
+void SetPrimitiveSize(PrimitiveType prim_type, float prim_size) {
+    switch (prim_type) {
+        case PrimitiveType::TRIANGLE: return;
+        case PrimitiveType::LINE: glLineWidth(prim_size); return;
+        case PrimitiveType::POINT: glPointSize(prim_size); return;
+    }
+}
 
 // -----------------------------------------------------------------------------
 void UpdateAttribute(unsigned int index, const GpuBufferBase& array_buf,
@@ -73,6 +82,9 @@ public:
     // -------------------------------------------------------------------------
     void setArrayBuffer(const std::shared_ptr<GpuBufferBase> array_buf,
                         unsigned int index) {
+        if (array_buf->getBufferType() != BufferType::ARRAY) {
+            throw std::runtime_error("Non array buffer");
+        }
         if (m_array_bufs.count(index) == 0) {
             m_update_attrib = true;
         }
@@ -80,6 +92,10 @@ public:
     }
 
     void setIndexBuffer(const std::shared_ptr<GpuIndexBuffer> index_buf) {
+        if (*index_buf->getDataType() != typeid(unsigned int)) {
+            throw std::runtime_error("Index buffer type must be uint");
+        }
+        m_update_indices = true;
         m_index_buffer = index_buf;
     }
 
@@ -88,27 +104,24 @@ public:
         m_shader = shader;
     }
 
-    void draw(PrimitiveType prim_type) {
-        // Create VAO
-        if (m_vao == 0) {
-            OGLW_CHECK(glGenVertexArrays, 1, &m_vao);
-            OGLW_CHECK(glBindVertexArray, m_vao);
-        }
-
+    void draw(PrimitiveType prim_type, float prim_size) {
         // Check vertex array
         if (m_array_bufs.count(0) == 0 ||
             *m_array_bufs[0]->getDataType() != typeid(float)) {
             throw std::runtime_error("No floating vertex array");
         }
 
-        // Update attributes
-        if (m_update_attrib) {
-            m_update_attrib = false;
-            for (auto& v : m_array_bufs) {
-                UpdateAttribute(v.first, *v.second,
-                                GetGlType(v.second->getDataType()));
-            }
+        // Create VAO
+        if (m_vao == 0) {
+            OGLW_CHECK(glGenVertexArrays, 1, &m_vao);
         }
+        // Bind VAO
+        OGLW_CHECK(glBindVertexArray, m_vao);
+
+        // Update attribute binding
+        updateAttribute();
+        // Update index buffer binding
+        updateIndexBuffer();
 
         // Use shader
         if (!m_shader) {
@@ -116,20 +129,8 @@ public:
         }
         m_shader->use();
 
-        // Bind VAO
-        OGLW_CHECK(glBindVertexArray, m_vao);
-
         // Draw
-        const GLenum gl_prim = GetGlPrimitive(prim_type);
-        if (m_index_buffer) {
-            const size_t size = m_index_buffer->getElemSize() *
-                                m_index_buffer->getNumElem();
-            OGLW_CHECK(glDrawElements, gl_prim, size, GL_UNSIGNED_INT, nullptr);
-        } else {
-            const size_t size = m_array_bufs[0]->getElemSize() *
-                                m_array_bufs[0]->getNumElem();
-            OGLW_CHECK(glDrawArrays, gl_prim, 0, size);
-        }
+        drawPrimitives(prim_type, prim_size);
 
         // Unbind
         OGLW_CHECK(glBindVertexArray, 0);
@@ -148,9 +149,46 @@ private:
         m_shader = nullptr;
     }
 
+    void updateAttribute() {
+        if (m_update_attrib) {
+            m_update_attrib = false;
+            for (auto& v : m_array_bufs) {
+                UpdateAttribute(v.first, *v.second,
+                                GetGlType(v.second->getDataType()));
+            }
+        }
+    }
+
+    void updateIndexBuffer() {
+        if (m_index_buffer && m_update_indices) {
+            m_update_indices = false;
+            OGLW_CHECK(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER,
+                       m_index_buffer->getBufferId());
+        }
+    }
+
+    void drawPrimitives(PrimitiveType prim_type, float prim_size) {
+        // Primitive size
+        SetPrimitiveSize(prim_type, prim_size);
+
+        // Draw
+        const GLenum gl_prim = GetGlPrimitive(prim_type);
+        if (m_index_buffer) {
+            // Index drawing
+            const size_t size = m_index_buffer->getElemSize() *
+                                m_index_buffer->getNumElem();
+            OGLW_CHECK(glDrawElements, gl_prim, size, GL_UNSIGNED_INT, nullptr);
+        } else {
+            // Basic drawing
+            const size_t size = m_array_bufs[0]->getNumElem();
+            OGLW_CHECK(glDrawArrays, gl_prim, 0, size);
+        }
+    }
+
     GLuint m_vao = 0;
 
     bool m_update_attrib = false;
+    bool m_update_indices = false;
 
     std::map<unsigned int, std::shared_ptr<GpuBufferBase>> m_array_bufs;
     std::shared_ptr<GpuIndexBuffer> m_index_buffer;
@@ -183,8 +221,8 @@ void Geometry::setShader(const std::shared_ptr<GpuShader> shader) {
     m_impl->setShader(shader);
 }
 
-void Geometry::draw(PrimitiveType prim_type) {
-    m_impl->draw(prim_type);
+void Geometry::draw(PrimitiveType prim_type, float prim_size) {
+    m_impl->draw(prim_type, prim_size);
 }
 
 }  // namespace oglw
