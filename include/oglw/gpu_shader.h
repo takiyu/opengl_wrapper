@@ -17,6 +17,10 @@ enum class ShaderType {
 // ================================ GPU Shader =================================
 class GpuShader {
 public:
+    static auto Create() {
+        return std::make_shared<GpuShader>();
+    }
+
     GpuShader();
 
     GpuShader(const GpuShader&) = delete;  // non-copyable
@@ -49,6 +53,9 @@ private:
     class Impl;
     std::unique_ptr<Impl> m_impl;
 };
+
+// ------------------------------ Pointer Aliases ------------------------------
+using GpuShaderPtr = std::shared_ptr<GpuShader>;
 
 }  // namespace oglw
 

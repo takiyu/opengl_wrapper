@@ -15,7 +15,7 @@ TEST_CASE("ObjLoader test") {
     SECTION("GpuShader basic") {
         oglw::GlWindow win("Title");
 
-        std::vector<std::shared_ptr<oglw::Geometry>> geoms;
+        std::vector<oglw::GeometryPtr> geoms;
         oglw::LoadObj(
                 "/home/takiyu/Projects/work/huawei/hair_geom/hairstyles/"
                 "head_model.obj",
@@ -23,7 +23,7 @@ TEST_CASE("ObjLoader test") {
         REQUIRE(geoms.size() == 1);
         auto geom = geoms[0];
 
-        auto gpu_shader = std::make_shared<oglw::GpuShader>();
+        auto gpu_shader = oglw::GpuShader::Create();
         gpu_shader->attach(oglw::ShaderType::VERTEX, "");
         gpu_shader->attach(oglw::ShaderType::FRAGMENT, "");
         gpu_shader->link();

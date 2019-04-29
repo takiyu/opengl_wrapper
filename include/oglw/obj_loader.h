@@ -9,7 +9,7 @@
 namespace oglw {
 
 // ================================ Obj Loader =================================
-void LoadObj(const std::string& filename, std::vector<std::shared_ptr<Geometry>>& geoms);
+void LoadObj(const std::string& filename, std::vector<GeometryPtr>& geoms);
 
 }  // namespace oglw
 

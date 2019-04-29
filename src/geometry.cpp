@@ -80,8 +80,7 @@ public:
     }
 
     // -------------------------------------------------------------------------
-    void setArrayBuffer(const std::shared_ptr<GpuBufferBase> array_buf,
-                        unsigned int index) {
+    void setArrayBuffer(const GpuBufferBasePtr array_buf, unsigned int index) {
         if (array_buf->getBufferType() != BufferType::ARRAY) {
             throw std::runtime_error("Non array buffer");
         }
@@ -91,7 +90,7 @@ public:
         m_array_bufs[index] = array_buf;
     }
 
-    void setIndexBuffer(const std::shared_ptr<GpuIndexBuffer> index_buf) {
+    void setIndexBuffer(const GpuIndexBufferPtr index_buf) {
         if (*index_buf->getDataType() != typeid(unsigned int)) {
             throw std::runtime_error("Index buffer type must be uint");
         }
@@ -100,7 +99,7 @@ public:
     }
 
     // -------------------------------------------------------------------------
-    void setShader(const std::shared_ptr<GpuShader> shader) {
+    void setShader(const GpuShaderPtr shader) {
         m_shader = shader;
     }
 
@@ -190,9 +189,9 @@ private:
     bool m_update_attrib = false;
     bool m_update_indices = false;
 
-    std::map<unsigned int, std::shared_ptr<GpuBufferBase>> m_array_bufs;
-    std::shared_ptr<GpuIndexBuffer> m_index_buffer;
-    std::shared_ptr<GpuShader> m_shader;
+    std::map<unsigned int, GpuBufferBasePtr> m_array_bufs;
+    GpuIndexBufferPtr m_index_buffer;
+    GpuShaderPtr m_shader;
 };
 
 // -----------------------------------------------------------------------------
@@ -207,17 +206,17 @@ Geometry& Geometry::operator=(Geometry&&) = default;
 Geometry::~Geometry() = default;
 
 // -----------------------------------------------------------------------------
-void Geometry::setArrayBuffer(const std::shared_ptr<GpuBufferBase> array_buf,
+void Geometry::setArrayBuffer(const GpuBufferBasePtr array_buf,
                               unsigned int index) {
     m_impl->setArrayBuffer(array_buf, index);
 }
 
-void Geometry::setIndexBuffer(const std::shared_ptr<GpuIndexBuffer> index_buf) {
+void Geometry::setIndexBuffer(const GpuIndexBufferPtr index_buf) {
     m_impl->setIndexBuffer(index_buf);
 }
 
 // -------------------------------------------------------------------------
-void Geometry::setShader(const std::shared_ptr<GpuShader> shader) {
+void Geometry::setShader(const GpuShaderPtr shader) {
     m_impl->setShader(shader);
 }
 

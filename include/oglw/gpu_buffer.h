@@ -19,6 +19,7 @@ enum class BufferUsageType {
 class GpuBufferBase {
 public:
     virtual ~GpuBufferBase() {}
+
     virtual size_t getNumElem() const = 0;
     virtual size_t getElemSize() const = 0;
     virtual size_t getByteSize() const = 0;
@@ -32,6 +33,11 @@ public:
 template <typename T, BufferType B>
 class GpuBuffer : public GpuBufferBase {
 public:
+    template <typename... Args>
+    static auto Create(Args... args) {
+        return std::make_shared<GpuBuffer>(args...);
+    }
+
     GpuBuffer();
     GpuBuffer(size_t n_elem, size_t elem_size = 1,
               BufferUsageType type = BufferUsageType::DYNAMIC_DRAW);
@@ -65,6 +71,12 @@ private:
 template <typename T>
 using GpuArrayBuffer = GpuBuffer<T, BufferType::ARRAY>;
 using GpuIndexBuffer = GpuBuffer<unsigned int, BufferType::ARRAY>;
+
+// ------------------------------ Pointer Aliases ------------------------------
+using GpuBufferBasePtr = std::shared_ptr<GpuBufferBase>;
+template <typename T>
+using GpuArrayBufferPtr = std::shared_ptr<GpuArrayBuffer<T>>;
+using GpuIndexBufferPtr = std::shared_ptr<GpuIndexBuffer>;
 
 // ------------------------------ Specialization -------------------------------
 template class GpuBuffer<float, BufferType::ARRAY>;

@@ -14,24 +14,27 @@ template <typename T>
 class GpuImage;
 
 // ================================= Image Base ================================
-class Image {
+class ImageBase {
 public:
-    virtual ~Image() {}
+    virtual ~ImageBase() {}
 
     virtual void init(size_t w, size_t h, size_t d) = 0;
     virtual bool empty() const = 0;
     virtual size_t getWidth() const = 0;
     virtual size_t getHeight() const = 0;
     virtual size_t getDepth() const = 0;
-
-private:
 };
 
 // ================================= CPU Image =================================
 template <typename T>
-class CpuImage : public Image {
+class CpuImage : public ImageBase {
 public:
     using ValueType = T;
+
+    template <typename... Args>
+    static auto Create(Args... args) {
+        return std::make_shared<CpuImage>(args...);
+    }
 
     CpuImage();
     CpuImage(size_t w, size_t h, size_t d);
@@ -72,9 +75,14 @@ private:
 
 // ================================= GPU Image =================================
 template <typename T>
-class GpuImage : public Image {
+class GpuImage : public ImageBase {
 public:
     using ValueType = T;
+
+    template <typename... Args>
+    static auto Create(Args... args) {
+        return std::make_shared<GpuImage>(args...);
+    }
 
     GpuImage();
     GpuImage(size_t w, size_t h, size_t d);
@@ -100,6 +108,13 @@ private:
     class Impl;
     std::unique_ptr<Impl> m_impl;
 };
+
+// ------------------------------ Pointer Aliases ------------------------------
+using ImageBasePtr = std::shared_ptr<ImageBase>;
+template <typename T>
+using GpuImagePtr = std::shared_ptr<GpuImage<T>>;
+template <typename T>
+using CpuImagePtr = std::shared_ptr<CpuImage<T>>;
 
 // ------------------------------ Specialization -------------------------------
 template class CpuImage<uint8_t>;

@@ -15,12 +15,12 @@ TEST_CASE("Geometry test") {
     SECTION("Basic triangle") {
         oglw::GlWindow win("Title");
 
-        auto vertex_array = std::make_shared<oglw::GpuArrayBuffer<float>>();
+        auto vertex_array = oglw::GpuArrayBuffer<float>::Create();
         vertex_array->init(3, 3);
         const float VERTICES[9] = {0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f};
         vertex_array->sendData(VERTICES);
 
-        auto color_array = std::make_shared<oglw::GpuArrayBuffer<float>>();
+        auto color_array = oglw::GpuArrayBuffer<float>::Create();
         color_array->init(3, 3);
         const float COLORS[9] = {0.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f};
         color_array->sendData(COLORS);
@@ -45,7 +45,7 @@ TEST_CASE("Geometry test") {
                 "    FragColor = vec4(frag_col, 0.0);\n"
                 "}\n";
 
-        auto gpu_shader = std::make_shared<oglw::GpuShader>();
+        auto gpu_shader = oglw::GpuShader::Create();
         gpu_shader->attach(oglw::ShaderType::VERTEX, VTX_SHADER);
         gpu_shader->attach(oglw::ShaderType::FRAGMENT, FRG_SHADER);
         gpu_shader->link();
@@ -74,12 +74,12 @@ TEST_CASE("Geometry test") {
     SECTION("Basic point") {
         oglw::GlWindow win("Title");
 
-        auto vertex_array = std::make_shared<oglw::GpuArrayBuffer<float>>();
+        auto vertex_array = oglw::GpuArrayBuffer<float>::Create();
         vertex_array->init(3, 3);
         const float VERTICES[9] = {0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f};
         vertex_array->sendData(VERTICES);
 
-        auto gpu_shader = std::make_shared<oglw::GpuShader>();
+        auto gpu_shader = oglw::GpuShader::Create();
         gpu_shader->attach(oglw::ShaderType::VERTEX, "");
         gpu_shader->attach(oglw::ShaderType::FRAGMENT, "");
         gpu_shader->link();
@@ -107,19 +107,18 @@ TEST_CASE("Geometry test") {
     SECTION("Index Buffer") {
         oglw::GlWindow win("Title");
 
-        auto vertex_array = std::make_shared<oglw::GpuArrayBuffer<float>>();
+        auto vertex_array = oglw::GpuArrayBuffer<float>::Create();
         vertex_array->init(4, 3);
         const float VERTICES[12] = {1.f,  0.f, 0.f, 0.f, 1.f,  0.f,
                                     -1.f, 0.f, 0.f, 0.f, -1.f, 0.f};
         vertex_array->sendData(VERTICES);
 
-        auto index_array =
-                std::make_shared<oglw::GpuArrayBuffer<unsigned int>>();
+        auto index_array = oglw::GpuArrayBuffer<unsigned int>::Create();
         index_array->init(6);
         const unsigned int INDICES[6] = {0, 1, 2, 2, 3, 0};
         index_array->sendData(INDICES);
 
-        auto gpu_shader = std::make_shared<oglw::GpuShader>();
+        auto gpu_shader = oglw::GpuShader::Create();
         gpu_shader->attach(oglw::ShaderType::VERTEX, "");
         gpu_shader->attach(oglw::ShaderType::FRAGMENT, "");
         gpu_shader->link();

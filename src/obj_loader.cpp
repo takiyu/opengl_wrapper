@@ -16,7 +16,7 @@ namespace {
 }  // namespace
 
 // ================================= Obj Loader ================================
-void LoadObj(const std::string& filename, std::vector<std::shared_ptr<Geometry>>& geoms) {
+void LoadObj(const std::string& filename, std::vector<GeometryPtr>& geoms) {
     geoms.clear();
 
     // Load with tinyobj
@@ -31,7 +31,7 @@ void LoadObj(const std::string& filename, std::vector<std::shared_ptr<Geometry>>
     }
 
     // Create attribute buffers
-    auto vertex_buf = std::make_shared<GpuArrayBuffer<float>>(attrib.vertices.size() / 3, 3);
+    auto vertex_buf = GpuArrayBuffer<float>::Create(attrib.vertices.size() / 3, 3);
     auto& vertices = attrib.vertices;
     float x_avg = 0.f;
     float y_avg = 0.f;
@@ -63,11 +63,11 @@ void LoadObj(const std::string& filename, std::vector<std::shared_ptr<Geometry>>
             indices[i] = static_cast<unsigned int>(tinyobj_indices[i].vertex_index);
         }
 
-        auto index_buf = std::make_shared<GpuIndexBuffer>(indices.size(), 1);
+        auto index_buf = GpuIndexBuffer::Create(indices.size(), 1);
         index_buf->sendData(indices.data());
 
         // Parse to geometry
-        auto geom = std::make_shared<Geometry>();
+        auto geom = Geometry::Create();
         geom->setArrayBuffer(vertex_buf, 0);
         geom->setIndexBuffer(index_buf);
         geoms.push_back(geom);
