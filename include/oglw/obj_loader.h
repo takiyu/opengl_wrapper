@@ -3,13 +3,23 @@
 
 #include <memory>
 #include <string>
+#include <map>
 
 #include <oglw/geometry.h>
 
 namespace oglw {
 
+enum class ObjLoaderMode {
+    INDEXING,
+    INDEXING_VTX_ONLY,
+    NO_INDICING,
+};
+
 // ================================ Obj Loader =================================
-void LoadObj(const std::string& filename, std::vector<GeometryPtr>& geoms);
+void LoadObj(const std::string& filename,
+             std::map<std::string, GeometryPtr>& geoms,
+             ObjLoaderMode mode = ObjLoaderMode::INDEXING,
+             const std::array<float, 3>& shift = {0.f, 0.f, 0.f});
 
 }  // namespace oglw
 
