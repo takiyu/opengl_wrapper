@@ -139,31 +139,42 @@ public:
 
     // -------------------------------------------------------------------------
     void setUniform(const std::string& name, bool v) {
-        glUniform1i(obtainUniformLocation(name), v);
+        use();  // Must be binded
+        OGLW_CHECK(glUniform1i, obtainUniformLocation(name), v);
     }
     void setUniform(const std::string& name, int v) {
-        glUniform1i(obtainUniformLocation(name), v);
+        use();
+        OGLW_CHECK(glUniform1i, obtainUniformLocation(name), v);
     }
     void setUniform(const std::string& name, unsigned int v) {
-        glUniform1ui(obtainUniformLocation(name), v);
+        use();
+        OGLW_CHECK(glUniform1ui, obtainUniformLocation(name), v);
     }
     void setUniform(const std::string& name, float v) {
-        glUniform1f(obtainUniformLocation(name), v);
+        use();
+        OGLW_CHECK(glUniform1f, obtainUniformLocation(name), v);
     }
     void setUniform(const std::string& name, const std::array<float, 2>& v) {
-        glUniform2fv(obtainUniformLocation(name), 1, v.data());
+        use();
+        OGLW_CHECK(glUniform2fv, obtainUniformLocation(name), 1, v.data());
     }
     void setUniform(const std::string& name, const std::array<float, 3>& v) {
-        glUniform3fv(obtainUniformLocation(name), 1, v.data());
+        use();
+        OGLW_CHECK(glUniform3fv, obtainUniformLocation(name), 1, v.data());
     }
     void setUniform(const std::string& name, const std::array<float, 4>& v) {
-        glUniform4fv(obtainUniformLocation(name), 1, v.data());
+        use();
+        OGLW_CHECK(glUniform4fv, obtainUniformLocation(name), 1, v.data());
     }
     void setUniform(const std::string& name, const std::array<float, 9>& v) {
-        glUniformMatrix3fv(obtainUniformLocation(name), 1, GL_FALSE, v.data());
+        use();
+        OGLW_CHECK(glUniformMatrix3fv, obtainUniformLocation(name), 1, GL_FALSE,
+                   v.data());
     }
     void setUniform(const std::string& name, const std::array<float, 16>& v) {
-        glUniformMatrix4fv(obtainUniformLocation(name), 1, GL_FALSE, v.data());
+        use();
+        OGLW_CHECK(glUniformMatrix4fv, obtainUniformLocation(name), 1, GL_FALSE,
+                   v.data());
     }
 
     // -------------------------------------------------------------------------

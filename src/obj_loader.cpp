@@ -148,7 +148,8 @@ void ComputeGeometricNormals(
         // Normalize
         float n_norm = 0.f;
         for (size_t c_idx = 0; c_idx < 3; c_idx++) {
-            n_norm += normals[3 * i + c_idx];
+            const float v = normals[3 * i + c_idx];
+            n_norm += v * v;
         }
         n_norm = std::sqrt(n_norm);
         for (size_t c_idx = 0; c_idx < 3; c_idx++) {
@@ -193,6 +194,16 @@ void CreateGeometryIndexingVtxOnly(
 }
 
 // -----------------------------------------------------------------------------
+void CreateGeometryNoIndexing(
+        const std::vector<float>& vertices,
+        const std::vector<float>& normals,
+        const std::vector<float>& texcoords,
+        const std::map<std::string, AttributeIndices>& indices,
+        std::map<std::string, GeometryPtr>& geoms) {
+    throw std::runtime_error("Not implemented");
+}
+
+// -----------------------------------------------------------------------------
 void ShiftVertices(std::vector<float>& vtxs,
                    const std::array<float, 3>& shift) {
     for (size_t v_idx = 0; v_idx < vtxs.size() / 3; v_idx++) {
@@ -225,7 +236,7 @@ void LoadObj(const std::string& filename,
         CreateGeometryIndexingVtxOnly(vertices, indices, geoms);
     } else if (mode == ObjLoaderMode::NO_INDICING) {
         // No indexing
-        throw std::runtime_error("Not implemented");
+        CreateGeometryNoIndexing(vertices, normals, texcoords, indices, geoms);
     } else {
         throw std::runtime_error("Invalid Obj loader mode");
     }
