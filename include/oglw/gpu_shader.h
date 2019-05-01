@@ -1,11 +1,11 @@
 #ifndef OGLW_GPU_SHADER_H_190205
 #define OGLW_GPU_SHADER_H_190205
 
-#include <array>
 #include <memory>
 #include <vector>
 
 #include <oglw/image.h>
+#include <oglw/vec_types.h>
 
 namespace oglw {
 
@@ -36,11 +36,11 @@ public:
     void setUniform(const std::string& name, int v);
     void setUniform(const std::string& name, unsigned int v);
     void setUniform(const std::string& name, float v);
-    void setUniform(const std::string& name, const std::array<float, 2>& v);
-    void setUniform(const std::string& name, const std::array<float, 3>& v);
-    void setUniform(const std::string& name, const std::array<float, 4>& v);
-    void setUniform(const std::string& name, const std::array<float, 9>& v);
-    void setUniform(const std::string& name, const std::array<float, 16>& v);
+    void setUniform(const std::string& name, const Vec2& v);
+    void setUniform(const std::string& name, const Vec3& v);
+    void setUniform(const std::string& name, const Vec4& v);
+    void setUniform(const std::string& name, const Mat3& v);
+    void setUniform(const std::string& name, const Mat4& v);
 
     template <typename T>
     void setUniform(const std::string& name, const GpuImage<T>& gpu_img) {

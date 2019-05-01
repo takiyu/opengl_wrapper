@@ -103,6 +103,11 @@ list(APPEND OGLW_LIBRARY ${GLAD_LIBRARIES})
 # TinyObjLoader
 list(APPEND OGLW_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 
+# Eigen
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/eigen)
+list(APPEND OGLW_INCLUDE ${EIGEN_INCLUDE_DIR})
+list(APPEND OGLW_LIBRARY eigen)
+
 # ------------------------------------------------------------------------------
 # ----------------------------- Internal Libraries -----------------------------
 # ------------------------------------------------------------------------------

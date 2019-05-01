@@ -11,19 +11,20 @@
 #include <sstream>
 #include <stdexcept>
 
-static void Perspective(float fov_y, float aspect, float z_near, float z_far,
-                 std::array<float, 16>& proj_mat) {
+static oglw::Mat4 Perspective(float fov_y, float aspect, float z_near, float z_far) {
     assert(aspect > 0);
     assert(zFar > zNear);
 
     float radf = fov_y / 180.0f * 3.1415962f;
+    oglw::Mat4 proj_mat = oglw::Mat4::Zero();
     float fov_y_tan_half = std::tan(radf / 2.f);
-    proj_mat.fill(0.f);
-    proj_mat[0 + 4 * 0] = 1.f / (aspect * fov_y_tan_half);
-    proj_mat[1 + 4 * 1] = 1.f / (fov_y_tan_half);
-    proj_mat[2 + 4 * 2] = -(z_far + z_near) / (z_far - z_near);
-    proj_mat[3 + 4 * 2] = -1.f;
-    proj_mat[2 + 4 * 3] = -(2.f * z_far * z_near) / (z_far - z_near);
+    proj_mat(0, 0) = 1.f / (aspect * fov_y_tan_half);
+    proj_mat(1, 1) = 1.f / (fov_y_tan_half);
+    proj_mat(2, 2) = -(z_far + z_near) / (z_far - z_near);
+    proj_mat(3, 2) = -1.f;
+    proj_mat(2, 3) = -(2.f * z_far * z_near) / (z_far - z_near);
+
+    return proj_mat;
 }
 
 TEST_CASE("ObjLoader test") {
@@ -74,9 +75,8 @@ TEST_CASE("ObjLoader test") {
                        &height);
             OGLW_CHECK(glViewport, 0, 0, width, height);
 
-            std::array<float, 16> proj_mat;
             const float aspect = static_cast<float>(width) / height;
-            Perspective(45.f, aspect, 0.0001f, 100000.f, proj_mat);
+            const oglw::Mat4 proj_mat = Perspective(45.f, aspect, 0.0001f, 100000.f);
             gpu_shader->setUniform("proj_mat", proj_mat);
 
             OGLW_CHECK(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

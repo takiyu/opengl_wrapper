@@ -154,24 +154,24 @@ public:
         use();
         OGLW_CHECK(glUniform1f, obtainUniformLocation(name), v);
     }
-    void setUniform(const std::string& name, const std::array<float, 2>& v) {
+    void setUniform(const std::string& name, const Vec2& v) {
         use();
         OGLW_CHECK(glUniform2fv, obtainUniformLocation(name), 1, v.data());
     }
-    void setUniform(const std::string& name, const std::array<float, 3>& v) {
+    void setUniform(const std::string& name, const Vec3& v) {
         use();
         OGLW_CHECK(glUniform3fv, obtainUniformLocation(name), 1, v.data());
     }
-    void setUniform(const std::string& name, const std::array<float, 4>& v) {
+    void setUniform(const std::string& name, const Vec4& v) {
         use();
         OGLW_CHECK(glUniform4fv, obtainUniformLocation(name), 1, v.data());
     }
-    void setUniform(const std::string& name, const std::array<float, 9>& v) {
+    void setUniform(const std::string& name, const Mat3& v) {
         use();
         OGLW_CHECK(glUniformMatrix3fv, obtainUniformLocation(name), 1, GL_FALSE,
                    v.data());
     }
-    void setUniform(const std::string& name, const std::array<float, 16>& v) {
+    void setUniform(const std::string& name, const Mat4& v) {
         use();
         OGLW_CHECK(glUniformMatrix4fv, obtainUniformLocation(name), 1, GL_FALSE,
                    v.data());
@@ -244,28 +244,23 @@ void GpuShader::setUniform(const std::string& name, float v) {
     m_impl->setUniform(name, v);
 }
 
-void GpuShader::setUniform(const std::string& name,
-                           const std::array<float, 2>& v) {
+void GpuShader::setUniform(const std::string& name, const Vec2& v) {
     m_impl->setUniform(name, v);
 }
 
-void GpuShader::setUniform(const std::string& name,
-                           const std::array<float, 3>& v) {
+void GpuShader::setUniform(const std::string& name, const Vec3& v) {
     m_impl->setUniform(name, v);
 }
 
-void GpuShader::setUniform(const std::string& name,
-                           const std::array<float, 4>& v) {
+void GpuShader::setUniform(const std::string& name, const Vec4& v) {
     m_impl->setUniform(name, v);
 }
 
-void GpuShader::setUniform(const std::string& name,
-                           const std::array<float, 9>& v) {
+void GpuShader::setUniform(const std::string& name, const Mat3& v) {
     m_impl->setUniform(name, v);
 }
 
-void GpuShader::setUniform(const std::string& name,
-                           const std::array<float, 16>& v) {
+void GpuShader::setUniform(const std::string& name, const Mat4& v) {
     m_impl->setUniform(name, v);
 }
 
