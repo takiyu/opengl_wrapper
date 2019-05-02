@@ -5,39 +5,47 @@
 #include <oglw/gpu_buffer.h>
 #include <oglw/gpu_shader.h>
 #include <oglw/obj_loader.h>
+#include <oglw/camera.h>
 
 #include "gl_window.h"
 
 #include <sstream>
 #include <stdexcept>
 
-static oglw::Mat4 Perspective(float fov_y, float aspect, float z_near, float z_far) {
-    assert(aspect > 0);
-    assert(zFar > zNear);
-
-    float radf = fov_y / 180.0f * 3.1415962f;
-    oglw::Mat4 proj_mat = oglw::Mat4::Zero();
-    float fov_y_tan_half = std::tan(radf / 2.f);
-    proj_mat(0, 0) = 1.f / (aspect * fov_y_tan_half);
-    proj_mat(1, 1) = 1.f / (fov_y_tan_half);
-    proj_mat(2, 2) = -(z_far + z_near) / (z_far - z_near);
-    proj_mat(3, 2) = -1.f;
-    proj_mat(2, 3) = -(2.f * z_far * z_near) / (z_far - z_near);
-
-    return proj_mat;
+static oglw::Camera camera;
+static double prev_xpos = 0.0, prev_ypos = 0.0;
+static bool move = false;
+static void MouseMoveCallback(GLFWwindow* win, double xpos, double ypos) {
+    if (move) {
+        camera.rotateOrbit((xpos - prev_xpos) * 0.001,
+                           (ypos - prev_ypos) * 0.001);
+    }
+    prev_xpos = xpos;
+    prev_ypos = ypos;
+}
+static void MouseButtonCallback(GLFWwindow* win, int btn, int act, int mods) {
+    if (btn == GLFW_MOUSE_BUTTON_LEFT && act == GLFW_PRESS) {
+        move = true;
+    }
+    if (btn == GLFW_MOUSE_BUTTON_LEFT && act == GLFW_RELEASE) {
+        move = false;
+    }
 }
 
 TEST_CASE("ObjLoader test") {
     SECTION("GpuShader basic") {
         oglw::GlWindow win("Title");
+        glfwSetCursorPosCallback(win.getWindowPtr(), MouseMoveCallback);
+        glfwSetMouseButtonCallback(win.getWindowPtr(), MouseButtonCallback);
 
         std::map<std::string, oglw::GeometryPtr> geoms;
         oglw::LoadObj(
+//                 "/home/takiyu/Downloads/obj/cornell-box/CornellBox-Empty-CO.obj",
                 "/home/takiyu/Projects/work/huawei/hair_geom/hairstyles/"
                 "head_model.obj",
                 geoms, oglw::ObjLoaderMode::INDEXING_VTX_ONLY,
-                {0.f, -1.5, -1.1f});
-        REQUIRE(geoms.size() == 1);
+                {0.f, -1.5, 0.f});
+//         REQUIRE(geoms.size() == 1);
         oglw::GeometryPtr geom = geoms.begin()->second;
 
         const std::string VTX_SHADER =
@@ -46,10 +54,11 @@ TEST_CASE("ObjLoader test") {
                 "layout (location=1) in vec3 normal;\n"
                 "layout (location=2) in vec2 texcoord;\n"
                 "uniform mat4 proj_mat;\n"
+                "uniform mat4 view_mat;\n"
                 "out vec3 frag_normal;\n"
                 "out vec2 frag_texcoord;\n"
                 "void main() {\n"
-                "    gl_Position = proj_mat * vec4(position, 1.0);\n"
+                "    gl_Position = proj_mat * view_mat * vec4(position, 1.0);\n"
                 "    frag_normal = normal;\n"
                 "    frag_texcoord = texcoord;\n"
                 "}\n";
@@ -69,15 +78,17 @@ TEST_CASE("ObjLoader test") {
 
         geom->setShader(gpu_shader);
 
-        for (size_t i = 0; i < 50; i++) {
+        for (size_t i = 0; i < 500; i++) {
             int width, height;
             OGLW_CHECK(glfwGetFramebufferSize, win.getWindowPtr(), &width,
                        &height);
             OGLW_CHECK(glViewport, 0, 0, width, height);
 
-            const float aspect = static_cast<float>(width) / height;
-            const oglw::Mat4 proj_mat = Perspective(45.f, aspect, 0.0001f, 100000.f);
+            camera.setScreenSize(width, height);
+            const oglw::Mat4& proj_mat = camera.getProj();
+            const oglw::Mat4& view_mat = camera.getView();
             gpu_shader->setUniform("proj_mat", proj_mat);
+            gpu_shader->setUniform("view_mat", view_mat);
 
             OGLW_CHECK(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             OGLW_CHECK(glClearColor, 0.3, 0.3, 1.0, 1.0);

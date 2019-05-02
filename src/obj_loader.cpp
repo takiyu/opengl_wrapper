@@ -205,11 +205,24 @@ void CreateGeometryNoIndexing(
 
 // -----------------------------------------------------------------------------
 void ShiftVertices(std::vector<float>& vtxs,
-                   const std::array<float, 3>& shift) {
+                   const Vec3& shift) {
+    float x_avg = 0.f, y_avg = 0.f, z_avg = 0.f;
     for (size_t v_idx = 0; v_idx < vtxs.size() / 3; v_idx++) {
-        vtxs[3 * v_idx + 0] += shift[0];
-        vtxs[3 * v_idx + 1] += shift[1];
-        vtxs[3 * v_idx + 2] += shift[2];
+        x_avg += vtxs[3 * v_idx + 0];
+        y_avg += vtxs[3 * v_idx + 1];
+        z_avg += vtxs[3 * v_idx + 2];
+    }
+    x_avg /= static_cast<float>(vtxs.size() / 3);
+    y_avg /= static_cast<float>(vtxs.size() / 3);
+    z_avg /= static_cast<float>(vtxs.size() / 3);
+
+    for (size_t v_idx = 0; v_idx < vtxs.size() / 3; v_idx++) {
+        vtxs[3 * v_idx + 0] -= x_avg;
+        vtxs[3 * v_idx + 1] -= y_avg;
+        vtxs[3 * v_idx + 2] -= z_avg;
+//         vtxs[3 * v_idx + 0] += shift(0);
+//         vtxs[3 * v_idx + 1] += shift(1);
+//         vtxs[3 * v_idx + 2] += shift(2);
     }
 }
 
@@ -218,7 +231,7 @@ void ShiftVertices(std::vector<float>& vtxs,
 // ================================= Obj Loader ================================
 void LoadObj(const std::string& filename,
              std::map<std::string, GeometryPtr>& geoms, ObjLoaderMode mode,
-             const std::array<float, 3>& shift) {
+             const Vec3& shift) {
     // Load basic informations
     std::vector<float> vertices, normals, texcoords;
     std::map<std::string, AttributeIndices> indices;
@@ -230,7 +243,6 @@ void LoadObj(const std::string& filename,
     if (mode == ObjLoaderMode::INDEXING) {
         // Indexing
         throw std::runtime_error("Not implemented");
-
     } else if (mode == ObjLoaderMode::INDEXING_VTX_ONLY) {
         // Indexing with only vertices
         CreateGeometryIndexingVtxOnly(vertices, indices, geoms);

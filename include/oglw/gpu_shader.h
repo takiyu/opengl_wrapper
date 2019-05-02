@@ -5,7 +5,7 @@
 #include <vector>
 
 #include <oglw/image.h>
-#include <oglw/vec_types.h>
+#include <oglw/types.h>
 
 namespace oglw {
 

@@ -32,6 +32,9 @@ using Mat4 = Eigen::Matrix4f;
 using Mat3 = Eigen::Matrix3f;
 using Mat2 = Eigen::Matrix2f;
 
+static constexpr float PI = static_cast<float>(EIGEN_PI);
+static constexpr float HALF_PI = static_cast<float>(EIGEN_PI * 0.5);
+
 }  // namespace oglw
 
 #endif /* end of include guard */

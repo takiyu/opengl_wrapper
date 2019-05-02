@@ -6,6 +6,7 @@
 #include <map>
 
 #include <oglw/geometry.h>
+#include <oglw/types.h>
 
 namespace oglw {
 
@@ -19,7 +20,7 @@ enum class ObjLoaderMode {
 void LoadObj(const std::string& filename,
              std::map<std::string, GeometryPtr>& geoms,
              ObjLoaderMode mode = ObjLoaderMode::INDEXING,
-             const std::array<float, 3>& shift = {0.f, 0.f, 0.f});
+             const Vec3& shift = {0.f, 0.f, 0.f});
 
 }  // namespace oglw
 
