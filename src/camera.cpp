@@ -116,6 +116,15 @@ public:
     }
 
     // -------------------------------------------------------------------------
+    void setEye(const Vec3& eye) {
+        m_eye = eye;
+    }
+
+    void setCenter(const Vec3& center) {
+        m_center = center;
+    }
+
+    // -------------------------------------------------------------------------
     void rotateOrbit(float dtheta, float dphi) {
         m_eye = RotateOrbit(m_eye, m_center, dtheta, dphi);
     }
@@ -169,6 +178,15 @@ void Camera::setFov(float fov) {
 
 void Camera::setNearFar(float near, float far) {
     m_impl->setNearFar(near, far);
+}
+
+// -----------------------------------------------------------------------------
+void Camera::setEye(const Vec3& eye) {
+    m_impl->setEye(eye);
+}
+
+void Camera::setCenter(const Vec3& center) {
+    m_impl->setCenter(center);
 }
 
 // -----------------------------------------------------------------------------
