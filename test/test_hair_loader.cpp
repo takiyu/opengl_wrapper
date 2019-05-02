@@ -5,7 +5,7 @@
 #include <oglw/gl_utils.h>
 #include <oglw/gpu_buffer.h>
 #include <oglw/gpu_shader.h>
-#include <oglw/obj_loader.h>
+#include <oglw/hair_loader.h>
 
 #include "gl_window.h"
 
@@ -36,20 +36,16 @@ static void MouseButtonCallback(GLFWwindow* win, int btn, int act, int mods) {
     }
 }
 
-TEST_CASE("ObjLoader test") {
-    SECTION("GpuShader basic") {
+TEST_CASE("HairLoader test") {
+    SECTION("Basic") {
         oglw::GlWindow win("Title");
         glfwSetCursorPosCallback(win.getWindowPtr(), MouseMoveCallback);
         glfwSetMouseButtonCallback(win.getWindowPtr(), MouseButtonCallback);
 
-        std::map<std::string, oglw::GeometryPtr> geoms;
-        oglw::LoadObj(
+        oglw::GeometryPtr geom = oglw::LoadHair(
                 "/home/takiyu/Projects/work/huawei/hair_geom/hairstyles/"
-                "head_model.obj",
-                geoms, oglw::ObjLoaderMode::INDEXING_VTX_ONLY,
+                "strands00001.data",
                 {0.f, -1.5, 0.f});
-        REQUIRE(geoms.size() == 1);
-        oglw::GeometryPtr geom = geoms.begin()->second;
 
         const std::string VTX_SHADER =
                 "#version 430\n"

@@ -206,23 +206,10 @@ void CreateGeometryNoIndexing(
 // -----------------------------------------------------------------------------
 void ShiftVertices(std::vector<float>& vtxs,
                    const Vec3& shift) {
-    float x_avg = 0.f, y_avg = 0.f, z_avg = 0.f;
     for (size_t v_idx = 0; v_idx < vtxs.size() / 3; v_idx++) {
-        x_avg += vtxs[3 * v_idx + 0];
-        y_avg += vtxs[3 * v_idx + 1];
-        z_avg += vtxs[3 * v_idx + 2];
-    }
-    x_avg /= static_cast<float>(vtxs.size() / 3);
-    y_avg /= static_cast<float>(vtxs.size() / 3);
-    z_avg /= static_cast<float>(vtxs.size() / 3);
-
-    for (size_t v_idx = 0; v_idx < vtxs.size() / 3; v_idx++) {
-        vtxs[3 * v_idx + 0] -= x_avg;
-        vtxs[3 * v_idx + 1] -= y_avg;
-        vtxs[3 * v_idx + 2] -= z_avg;
-//         vtxs[3 * v_idx + 0] += shift(0);
-//         vtxs[3 * v_idx + 1] += shift(1);
-//         vtxs[3 * v_idx + 2] += shift(2);
+        vtxs[3 * v_idx + 0] += shift(0);
+        vtxs[3 * v_idx + 1] += shift(1);
+        vtxs[3 * v_idx + 2] += shift(2);
     }
 }
 
@@ -251,6 +238,11 @@ void LoadObj(const std::string& filename,
         CreateGeometryNoIndexing(vertices, normals, texcoords, indices, geoms);
     } else {
         throw std::runtime_error("Invalid Obj loader mode");
+    }
+
+    // Set primitive as triangle
+    for (auto& v : geoms) {
+        v.second->setPrimitive(oglw::PrimitiveType::TRIANGLE);
     }
 }
 
