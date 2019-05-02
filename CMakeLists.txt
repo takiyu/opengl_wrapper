@@ -159,14 +159,15 @@ if (OGLW_BUILD_TESTS)
 
     # Executable file
     add_executable(oglw_test
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/test.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/gl_window.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/test_image.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/test_fast_array.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/test_geometry.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/test_obj_loader.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/test_hair_loader.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/gl_window.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test_image.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test_fast_array.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test_geometry.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test_obj_loader.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test_hair_loader.cpp
     )
+    list(APPEND OGLW_TEST_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/test)
     setup_target(oglw_test "${OGLW_INCLUDE};${OGLW_TEST_INCLUDE}"
                  "${OGLW_LIBRARY};${OGLW_TEST_LIBRARY}")
 
@@ -178,4 +179,6 @@ endif()
 if (HAS_PARENT)
     set(OGLW_INCLUDE ${OGLW_INCLUDE} PARENT_SCOPE)
     set(OGLW_LIBRARY ${OGLW_LIBRARY} PARENT_SCOPE)
+    set(OGLW_TEST_INCLUDE ${OGLW_TEST_INCLUDE} PARENT_SCOPE)
+    set(OGLW_TEST_LIBRARY ${OGLW_TEST_LIBRARY} PARENT_SCOPE)
 endif()
