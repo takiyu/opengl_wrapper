@@ -99,11 +99,17 @@ public:
     }
 
     // -------------------------------------------------------------------------
+    void setPrimitive(PrimitiveType prim_type, float prim_size) {
+        m_prim_type = prim_type;
+        m_prim_size = prim_size;
+    }
+
+    // -------------------------------------------------------------------------
     void setShader(const GpuShaderPtr shader) {
         m_shader = shader;
     }
 
-    void draw(PrimitiveType prim_type, float prim_size) {
+    void draw() {
         // Check vertex array
         if (m_array_bufs.count(0) == 0 ||
             *m_array_bufs[0]->getDataType() != typeid(float)) {
@@ -128,8 +134,11 @@ public:
         }
         m_shader->use();
 
+        // Primitive size
+        SetPrimitiveSize(m_prim_type, m_prim_size);
+
         // Draw
-        drawPrimitives(prim_type, prim_size);
+        drawPrimitives();
 
         // Unbind
         OGLW_CHECK(glBindVertexArray, 0);
@@ -166,12 +175,9 @@ private:
         }
     }
 
-    void drawPrimitives(PrimitiveType prim_type, float prim_size) {
-        // Primitive size
-        SetPrimitiveSize(prim_type, prim_size);
-
+    void drawPrimitives() {
         // Draw
-        const GLenum gl_prim = GetGlPrimitive(prim_type);
+        const GLenum gl_prim = GetGlPrimitive(m_prim_type);
         if (m_index_buffer) {
             // Index drawing
             const size_t size = m_index_buffer->getElemSize() *
@@ -192,6 +198,9 @@ private:
     std::map<unsigned int, GpuBufferBasePtr> m_array_bufs;
     GpuIndexBufferPtr m_index_buffer;
     GpuShaderPtr m_shader;
+
+    PrimitiveType m_prim_type = PrimitiveType::TRIANGLE;
+    float m_prim_size = 1.f;
 };
 
 // -----------------------------------------------------------------------------
@@ -216,12 +225,17 @@ void Geometry::setIndexBuffer(const GpuIndexBufferPtr index_buf) {
 }
 
 // -------------------------------------------------------------------------
+void Geometry::setPrimitive(PrimitiveType prim_type, float prim_size) {
+    m_impl->setPrimitive(prim_type, prim_size);
+}
+
+// -------------------------------------------------------------------------
 void Geometry::setShader(const GpuShaderPtr shader) {
     m_impl->setShader(shader);
 }
 
-void Geometry::draw(PrimitiveType prim_type, float prim_size) {
-    m_impl->draw(prim_type, prim_size);
+void Geometry::draw() {
+    m_impl->draw();
 }
 
 }  // namespace oglw

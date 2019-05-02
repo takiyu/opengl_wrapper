@@ -50,10 +50,11 @@ TEST_CASE("Geometry test") {
         gpu_shader->attach(oglw::ShaderType::FRAGMENT, FRG_SHADER);
         gpu_shader->link();
 
-        oglw::Geometry geom;
-        geom.setArrayBuffer(vertex_array, 0);
-        geom.setArrayBuffer(color_array, 1);
-        geom.setShader(gpu_shader);
+        auto geom = oglw::Geometry::Create();
+        geom->setArrayBuffer(vertex_array, 0);
+        geom->setArrayBuffer(color_array, 1);
+        geom->setShader(gpu_shader);
+        geom->setPrimitive(oglw::PrimitiveType::TRIANGLE);
 
         for (size_t i = 0; i < 20; i++) {
             int width, height;
@@ -64,7 +65,7 @@ TEST_CASE("Geometry test") {
             OGLW_CHECK(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             OGLW_CHECK(glClearColor, 0.3, 0.3, 1.0, 1.0);
 
-            geom.draw(oglw::PrimitiveType::TRIANGLE);
+            geom->draw();
 
             OGLW_CHECK(glfwSwapBuffers, win.getWindowPtr());
             OGLW_CHECK(glfwPollEvents);
@@ -84,9 +85,10 @@ TEST_CASE("Geometry test") {
         gpu_shader->attach(oglw::ShaderType::FRAGMENT, "");
         gpu_shader->link();
 
-        oglw::Geometry geom;
-        geom.setArrayBuffer(vertex_array, 0);
-        geom.setShader(gpu_shader);
+        auto geom = oglw::Geometry::Create();
+        geom->setArrayBuffer(vertex_array, 0);
+        geom->setShader(gpu_shader);
+        geom->setPrimitive(oglw::PrimitiveType::POINT, 100.f);
 
         for (size_t i = 0; i < 20; i++) {
             int width, height;
@@ -97,7 +99,7 @@ TEST_CASE("Geometry test") {
             OGLW_CHECK(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             OGLW_CHECK(glClearColor, 0.3, 0.3, 1.0, 1.0);
 
-            geom.draw(oglw::PrimitiveType::POINT, 50.f);
+            geom->draw();
 
             OGLW_CHECK(glfwSwapBuffers, win.getWindowPtr());
             OGLW_CHECK(glfwPollEvents);
@@ -123,10 +125,11 @@ TEST_CASE("Geometry test") {
         gpu_shader->attach(oglw::ShaderType::FRAGMENT, "");
         gpu_shader->link();
 
-        oglw::Geometry geom;
-        geom.setArrayBuffer(vertex_array, 0);
-        geom.setIndexBuffer(index_array);
-        geom.setShader(gpu_shader);
+        auto geom = oglw::Geometry::Create();
+        geom->setArrayBuffer(vertex_array, 0);
+        geom->setIndexBuffer(index_array);
+        geom->setShader(gpu_shader);
+        geom->setPrimitive(oglw::PrimitiveType::TRIANGLE);
 
         for (size_t i = 0; i < 20; i++) {
             int width, height;
@@ -137,7 +140,7 @@ TEST_CASE("Geometry test") {
             OGLW_CHECK(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             OGLW_CHECK(glClearColor, 0.3, 0.3, 1.0, 1.0);
 
-            geom.draw(oglw::PrimitiveType::TRIANGLE);
+            geom->draw();
 
             OGLW_CHECK(glfwSwapBuffers, win.getWindowPtr());
             OGLW_CHECK(glfwPollEvents);

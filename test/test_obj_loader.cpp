@@ -12,23 +12,27 @@
 #include <sstream>
 #include <stdexcept>
 
-static oglw::Camera camera;
-static double prev_xpos = 0.0, prev_ypos = 0.0;
-static bool move = false;
+static auto g_camera = oglw::Camera::Create();
+static double g_prev_xpos = 0.0, g_prev_ypos = 0.0;
+static bool g_move = false;
 static void MouseMoveCallback(GLFWwindow* win, double xpos, double ypos) {
-    if (move) {
-        camera.rotateOrbit((xpos - prev_xpos) * 0.001,
-                           (ypos - prev_ypos) * 0.001);
+    (void)win;
+    if (g_move) {
+        g_camera->rotateOrbit((xpos - g_prev_xpos) * -0.001,
+                           (ypos - g_prev_ypos) * -0.001);
     }
-    prev_xpos = xpos;
-    prev_ypos = ypos;
+    g_prev_xpos = xpos;
+    g_prev_ypos = ypos;
 }
 static void MouseButtonCallback(GLFWwindow* win, int btn, int act, int mods) {
+    (void)win;
+    (void)act;
+    (void)mods;
     if (btn == GLFW_MOUSE_BUTTON_LEFT && act == GLFW_PRESS) {
-        move = true;
+        g_move = true;
     }
     if (btn == GLFW_MOUSE_BUTTON_LEFT && act == GLFW_RELEASE) {
-        move = false;
+        g_move = false;
     }
 }
 
@@ -40,12 +44,11 @@ TEST_CASE("ObjLoader test") {
 
         std::map<std::string, oglw::GeometryPtr> geoms;
         oglw::LoadObj(
-//                 "/home/takiyu/Downloads/obj/cornell-box/CornellBox-Empty-CO.obj",
                 "/home/takiyu/Projects/work/huawei/hair_geom/hairstyles/"
                 "head_model.obj",
                 geoms, oglw::ObjLoaderMode::INDEXING_VTX_ONLY,
                 {0.f, -1.5, 0.f});
-//         REQUIRE(geoms.size() == 1);
+        REQUIRE(geoms.size() == 1);
         oglw::GeometryPtr geom = geoms.begin()->second;
 
         const std::string VTX_SHADER =
@@ -84,9 +87,9 @@ TEST_CASE("ObjLoader test") {
                        &height);
             OGLW_CHECK(glViewport, 0, 0, width, height);
 
-            camera.setScreenSize(width, height);
-            const oglw::Mat4& proj_mat = camera.getProj();
-            const oglw::Mat4& view_mat = camera.getView();
+            g_camera->setScreenSize(width, height);
+            const oglw::Mat4& proj_mat = g_camera->getProj();
+            const oglw::Mat4& view_mat = g_camera->getView();
             gpu_shader->setUniform("proj_mat", proj_mat);
             gpu_shader->setUniform("view_mat", view_mat);
 
@@ -94,7 +97,7 @@ TEST_CASE("ObjLoader test") {
             OGLW_CHECK(glClearColor, 0.3, 0.3, 1.0, 1.0);
 
             glEnable(GL_DEPTH_TEST);
-            geom->draw(oglw::PrimitiveType::TRIANGLE);
+            geom->draw();
 
             OGLW_CHECK(glfwSwapBuffers, win.getWindowPtr());
             OGLW_CHECK(glfwPollEvents);

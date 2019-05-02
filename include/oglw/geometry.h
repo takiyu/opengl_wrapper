@@ -31,8 +31,10 @@ public:
     void setArrayBuffer(const GpuBufferBasePtr array_buf, unsigned int index);
     void setIndexBuffer(const GpuIndexBufferPtr index_buf);
 
+    void setPrimitive(PrimitiveType prim_type, float prim_size = 1.f);
+
     void setShader(const GpuShaderPtr shader);
-    void draw(PrimitiveType prim_type, float prim_size = 1.f);
+    void draw();
 
 private:
     class Impl;
