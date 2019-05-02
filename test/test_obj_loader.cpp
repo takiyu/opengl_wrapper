@@ -44,7 +44,7 @@ TEST_CASE("ObjLoader test") {
 
         std::map<std::string, oglw::GeometryPtr> geoms;
         oglw::LoadObj(
-                "/home/takiyu/Projects/work/huawei/hair_geom/hairstyles/"
+                "/home/takiyu/Projects/work/huawei/hair/hairstyles/"
                 "head_model.obj",
                 geoms, oglw::ObjLoaderMode::INDEXING_VTX_ONLY,
                 {0.f, -1.5, 0.f});

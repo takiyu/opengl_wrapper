@@ -43,7 +43,7 @@ TEST_CASE("HairLoader test") {
         glfwSetMouseButtonCallback(win.getWindowPtr(), MouseButtonCallback);
 
         oglw::GeometryPtr geom = oglw::LoadHair(
-                "/home/takiyu/Projects/work/huawei/hair_geom/hairstyles/"
+                "/home/takiyu/Projects/work/huawei/hair/hairstyles/"
                 "strands00001.data",
                 {0.f, -1.5, 0.f});
 
