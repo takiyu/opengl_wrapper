@@ -9,6 +9,17 @@ set(OGLW_BUILD_TESTS ON CACHE BOOL "Build tests")
 message(STATUS "Build tests: ${OGLW_BUILD_TESTS}")
 
 # ------------------------------------------------------------------------------
+# -------------------------------- Check parent --------------------------------
+# ------------------------------------------------------------------------------
+get_directory_property(HAS_PARENT PARENT_DIRECTORY)
+if (HAS_PARENT)
+    message(STATUS "Build OGLW as subdirectory mode")
+else()
+    message(STATUS "Build OGLW as independent mode")
+endif()
+
+
+# ------------------------------------------------------------------------------
 # ----------------------------------- Common -----------------------------------
 # ------------------------------------------------------------------------------
 project(oglw CXX C)
@@ -164,7 +175,7 @@ endif()
 # ------------------------------------------------------------------------------
 # ----------------------------- Pass to the parent -----------------------------
 # ------------------------------------------------------------------------------
-if(HAS_PARENT)
+if (HAS_PARENT)
     set(OGLW_INCLUDE ${OGLW_INCLUDE} PARENT_SCOPE)
     set(OGLW_LIBRARY ${OGLW_LIBRARY} PARENT_SCOPE)
 endif()
