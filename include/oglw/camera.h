@@ -29,6 +29,9 @@ public:
     void setFov(float fov);
     void setNearFar(float near, float far);
 
+    void setEye(const Vec3& eye);
+    void setCenter(const Vec3& center);
+
     void rotateOrbit(float dtheta, float dphi);
 
     Mat4 getProj();
