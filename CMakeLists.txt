@@ -157,18 +157,25 @@ if (OGLW_BUILD_TESTS)
     list(APPEND OGLW_TEST_INCLUDE
                 ${CMAKE_CURRENT_SOURCE_DIR}/third_party/Catch2/single_include)
 
-    # Executable file
-    add_executable(oglw_test
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test.cpp
+    # oglw_test.so
+    add_library(oglw_test ${LINK_TYPE}
         ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/gl_window.cpp
+    )
+    list(APPEND OGLW_TEST_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/test)
+    setup_target(oglw_test "${OGLW_INCLUDE};${OGLW_TEST_INCLUDE}"
+                 "${OGLW_LIBRARY};${OGLW_TEST_LIBRARY}")
+    list(APPEND OGLW_LIBRARY oglw_test)
+
+    # Executable file
+    add_executable(run_oglw_test
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test_image.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test_fast_array.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test_geometry.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test_obj_loader.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/test/oglw/test_hair_loader.cpp
     )
-    list(APPEND OGLW_TEST_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/test)
-    setup_target(oglw_test "${OGLW_INCLUDE};${OGLW_TEST_INCLUDE}"
+    setup_target(run_oglw_test "${OGLW_INCLUDE};${OGLW_TEST_INCLUDE}"
                  "${OGLW_LIBRARY};${OGLW_TEST_LIBRARY}")
 
 endif()

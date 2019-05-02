@@ -5,7 +5,7 @@ let g:ale_c_parse_compile_commands = 1
 function! g:BuildAndRun()
     if g:asyncrun_status != 'running'
         execute 'AsyncStop'
-        execute 'AsyncRun cd build && make -j10 && ./bin/oglw_test'
+        execute 'AsyncRun cd build && make -j10 && ./bin/run_oglw_test'
     endif
 endfunction
 noremap <F8> :call g:BuildAndRun()<CR>
