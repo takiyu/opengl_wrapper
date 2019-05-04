@@ -147,7 +147,7 @@ TEST_CASE("Geometry test") {
         }
     }
 
-    SECTION("Off screen") {
+    SECTION("Off screen uint8") {
         oglw::GlWindow win("Title");
 
         auto vertex_array = oglw::GpuArrayBuffer<float>::Create();
@@ -171,6 +171,62 @@ TEST_CASE("Geometry test") {
         geom->draw();
 
         auto cpu_img = gpu_img->toCpu();
-        cpu_img->save("out_test_geom_offscreen.jpg");
+        cpu_img->save("out_test_geom_offscreen_uint8.jpg");
+    }
+
+    SECTION("Off screen float16") {
+        // TODO: Not works
+        oglw::GlWindow win("Title");
+
+        auto vertex_array = oglw::GpuArrayBuffer<float>::Create();
+        vertex_array->init(3, 3);
+        const float VERTICES[9] = {0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f};
+        vertex_array->sendData(VERTICES);
+
+        auto gpu_shader = oglw::GpuShader::Create();
+        gpu_shader->attach(oglw::ShaderType::VERTEX, "");
+        gpu_shader->attach(oglw::ShaderType::FRAGMENT, "");
+        gpu_shader->link();
+
+        auto geom = oglw::Geometry::Create();
+        geom->setArrayBuffer(vertex_array, 0);
+        geom->setShader(gpu_shader);
+        geom->setPrimitive(oglw::PrimitiveType::POINT, 10.f);
+
+        auto gpu_img = oglw::GpuImage<oglw::Float16>::Create(100, 100, 3);
+        geom->setFrameImage(gpu_img);
+
+        geom->draw();
+
+        auto cpu_img = gpu_img->toCpu();
+        cpu_img->save("out_test_geom_offscreen_float16.jpg");
+    }
+
+    SECTION("Off screen float32") {
+        // TODO: Not works
+        oglw::GlWindow win("Title");
+
+        auto vertex_array = oglw::GpuArrayBuffer<float>::Create();
+        vertex_array->init(3, 3);
+        const float VERTICES[9] = {0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f};
+        vertex_array->sendData(VERTICES);
+
+        auto gpu_shader = oglw::GpuShader::Create();
+        gpu_shader->attach(oglw::ShaderType::VERTEX, "");
+        gpu_shader->attach(oglw::ShaderType::FRAGMENT, "");
+        gpu_shader->link();
+
+        auto geom = oglw::Geometry::Create();
+        geom->setArrayBuffer(vertex_array, 0);
+        geom->setShader(gpu_shader);
+        geom->setPrimitive(oglw::PrimitiveType::POINT, 10.f);
+
+        auto gpu_img = oglw::GpuImage<float>::Create(100, 100, 3);
+        geom->setFrameImage(gpu_img);
+
+        geom->draw();
+
+        auto cpu_img = gpu_img->toCpu();
+        cpu_img->save("out_test_geom_offscreen_float32.jpg");
     }
 }

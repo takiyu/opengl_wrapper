@@ -40,7 +40,7 @@ public:
     void setFrameImage(const GpuImageBasePtr frame_img);
     GpuImageBasePtr getFrameImage() const;
 
-    void draw();
+    void draw(bool clear = false);
 
 private:
     class Impl;

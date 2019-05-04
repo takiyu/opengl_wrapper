@@ -127,7 +127,7 @@ public:
     }
 
     // -------------------------------------------------------------------------
-    void draw() {
+    void draw(bool clear) {
         // Check vertex array
         if (m_array_bufs.count(0) == 0 ||
             *m_array_bufs[0]->getDataType() != typeid(float)) {
@@ -159,7 +159,7 @@ public:
         SetPrimitiveSize(m_prim_type, m_prim_size);
 
         // Draw
-        drawPrimitives();
+        drawPrimitives(clear);
 
         // Unbind
         OGLW_CHECK(glBindVertexArray, 0);
@@ -241,12 +241,16 @@ private:
         }
     }
 
-    void drawPrimitives() {
+    void drawPrimitives(bool clear) {
         // Off-screen rendering
         if (m_frame_img) {
             glBindFramebuffer(GL_FRAMEBUFFER, m_fbo_id);
             OGLW_CHECK(glViewport, 0, 0, m_frame_img->getWidth(),
                        m_frame_img->getHeight());
+        }
+
+        // Clear
+        if (clear) {
             OGLW_CHECK(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
@@ -332,8 +336,8 @@ GpuImageBasePtr Geometry::getFrameImage() const {
 }
 
 // -------------------------------------------------------------------------
-void Geometry::draw() {
-    m_impl->draw();
+void Geometry::draw(bool clear) {
+    m_impl->draw(clear);
 }
 
 }  // namespace oglw
