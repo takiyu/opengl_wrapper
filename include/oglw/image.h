@@ -34,6 +34,9 @@ public:
     virtual size_t getWidth() const = 0;
     virtual size_t getHeight() const = 0;
     virtual size_t getDepth() const = 0;
+
+    virtual void load(const std::string& filename) = 0;
+    virtual void save(const std::string& filename) const = 0;
 };
 
 class GpuImageBase : public ImageBase {
@@ -77,6 +80,9 @@ public:
     virtual size_t getWidth() const override;
     virtual size_t getHeight() const override;
     virtual size_t getDepth() const override;
+
+    virtual void load(const std::string& filename) override;
+    virtual void save(const std::string& filename) const override;
 
     const T* data() const;
     T* data();
@@ -144,11 +150,11 @@ using CpuImagePtr = std::shared_ptr<CpuImage<T>>;
 
 // ------------------------------ Specialization -------------------------------
 template class CpuImage<uint8_t>;
-template class CpuImage<Float16>;
 template class CpuImage<float>;
+template class CpuImage<Float16>;
 template class GpuImage<uint8_t>;
-template class GpuImage<Float16>;
 template class GpuImage<float>;
+template class GpuImage<Float16>;
 
 }  // namespace oglw
 

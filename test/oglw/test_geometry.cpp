@@ -171,10 +171,6 @@ TEST_CASE("Geometry test") {
         geom->draw();
 
         auto cpu_img = gpu_img->toCpu();
-        cpu_img.foreach([](size_t x, size_t y, size_t z, unsigned char& v) {
-                if (v != 0) {
-                    std::cout << x << ", " << y << ", " << z << ": " << static_cast<int>(v) << std::endl;
-                }
-        }, 1);
+        cpu_img.save("out_test_geom_offscreen.jpg");
     }
 }

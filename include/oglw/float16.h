@@ -21,7 +21,6 @@ public:
     bool operator == (Float16 lhs) const { return v == lhs.v; }
     bool operator != (Float16 lhs) const { return v != lhs.v; }
 
-private:
     float v;
 };
 

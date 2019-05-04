@@ -238,6 +238,13 @@ TEST_CASE("Image test") {
         }, 1);
     }
 
+    SECTION("CpuImage Load and Save") {
+        oglw::GlWindow win("Title");
+        oglw::CpuImage<float> cpu_img;
+        cpu_img.load("../data/lena.jpg");
+        cpu_img.save("test_cpuimg_save.jpg");
+    }
+
 // =============================================================================
     SECTION("GpuImage Basic 1ch") {
         oglw::GlWindow win("Title");

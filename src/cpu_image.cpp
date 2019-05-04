@@ -1,5 +1,28 @@
 #include <oglw/image.h>
 
+// Include STB
+#if defined __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
+#elif defined __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
+#endif
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb/stb_image_write.h>
+#ifdef __clang__
+#pragma clang diagnostic pop
+#elif __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 #include "fast_array.h"
 
 #include <atomic>
@@ -10,6 +33,45 @@ namespace oglw {
 
 namespace {
 
+// -----------------------------------------------------------------------------
+template <typename T>
+T CastFromUint8(uint8_t v);
+
+template <>
+uint8_t CastFromUint8(uint8_t v) {
+    return v;
+}
+
+template <>
+float CastFromUint8(uint8_t v) {
+    return static_cast<float>(v) / 255.f;
+}
+
+template <>
+Float16 CastFromUint8(uint8_t v) {
+    return CastFromUint8<float>(v);
+}
+
+// -----------------------------------------------------------------------------
+template <typename T>
+uint8_t CastToUint8(T v);
+
+template <>
+uint8_t CastToUint8(uint8_t v) {
+    return v;
+}
+
+template <>
+uint8_t CastToUint8(float v) {
+    return static_cast<uint8_t>(std::min(std::max(v * 255.f, 0.f), 255.f));
+}
+
+template <>
+uint8_t CastToUint8(Float16 v) {
+    return CastFromUint8<float>(v.v);
+}
+
+// -----------------------------------------------------------------------------
 template <typename T>
 void ForeachThread(FastArray<T>& array, size_t w, size_t h, size_t d,
                    std::function<void(size_t x, size_t y, size_t z, T& v)> func,
@@ -84,6 +146,8 @@ void ForeachSimple(
     }
 }
 
+// -----------------------------------------------------------------------------
+
 }  // namespace
 
 // ================================= CPU Image =================================
@@ -124,6 +188,51 @@ public:
 
     size_t getDepth() const {
         return m_d;
+    }
+
+    // -------------------------------------------------------------------------
+    void load(const std::string& filename) {
+        // Load with STB
+        int w_i, h_i, d_i;
+        uint8_t* data = stbi_load(filename.c_str(), &w_i, &h_i, &d_i, 0);
+        if (!data) {
+            throw std::runtime_error("Failed to load: " + filename);
+        }
+        // Allocate
+        const size_t w = static_cast<size_t>(w_i);
+        const size_t h = static_cast<size_t>(h_i);
+        const size_t d = static_cast<size_t>(d_i);
+        init(w, h, d);
+        // Cast and set
+        foreach (
+                [&data, w, h, d](size_t x, size_t y, size_t z, T& v) {
+                    // y-flip
+                    const size_t idx = (w * (h - y - 1) + x) * d + z;
+                    v = CastFromUint8<T>(data[idx]);
+                },
+                0)
+            ;
+        // Free
+        stbi_image_free(data);
+    }
+
+    void save(const std::string& filename) {
+        // Cast
+        FastArray<uint8_t> u8_img(m_w * m_h * m_d);
+        foreach (
+                [this, &u8_img](size_t x, size_t y, size_t z, const T& v) {
+                    // y-flip
+                    const size_t idx = (m_w * (m_h - y - 1) + x) * m_d + z;
+                    u8_img.data()[idx] = CastToUint8(v);
+                },
+                0)
+            ;
+        // Save with STB
+        const int ret = stbi_write_jpg(filename.c_str(), m_w, m_h, m_d,
+                                       u8_img.data(), 90);
+        if (!ret) {
+            throw std::runtime_error("Failed to save: " + filename);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -234,6 +343,17 @@ size_t CpuImage<T>::getHeight() const {
 template <typename T>
 size_t CpuImage<T>::getDepth() const {
     return m_impl->getDepth();
+}
+
+// -----------------------------------------------------------------------------
+template <typename T>
+void CpuImage<T>::load(const std::string& filename) {
+    m_impl->load(filename);
+}
+
+template <typename T>
+void CpuImage<T>::save(const std::string& filename) const {
+    m_impl->save(filename);
 }
 
 // -----------------------------------------------------------------------------
