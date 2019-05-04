@@ -25,12 +25,13 @@
 
 namespace oglw {
 
-using Vec4 = Eigen::Vector4f;
-using Vec3 = Eigen::Vector3f;
 using Vec2 = Eigen::Vector2f;
-using Mat4 = Eigen::Matrix4f;
-using Mat3 = Eigen::Matrix3f;
+using Vec3 = Eigen::Vector3f;
+using Vec4 = Eigen::Vector4f;
 using Mat2 = Eigen::Matrix2f;
+using Mat3 = Eigen::Matrix3f;
+using Mat4 = Eigen::Matrix4f;
+using MatX = Eigen::MatrixXf;
 
 static constexpr float PI = static_cast<float>(EIGEN_PI);
 static constexpr float HALF_PI = static_cast<float>(EIGEN_PI * 0.5);
