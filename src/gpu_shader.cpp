@@ -33,9 +33,9 @@ const std::map<ShaderType, std::string> DEFAULT_SHADER = {
         {ShaderType::FRAGMENT,
          "#version 430\n"
          "in vec2 frag_pos;\n"
-         "layout (location=0) out vec4 FragColor;\n"
+         "layout (location=0) out vec4 out_color;\n"
          "void main() {\n"
-         "    FragColor = vec4(frag_pos, 0.0, 0.0);\n"
+         "    out_color = vec4(frag_pos, 0.0, 0.0);\n"
          "}\n"},
 };
 

@@ -25,9 +25,33 @@ public:
     virtual size_t getDepth() const = 0;
 };
 
+class CpuImageBase : public ImageBase {
+public:
+    virtual ~CpuImageBase() {}
+
+    virtual void init(size_t w, size_t h, size_t d) = 0;
+    virtual bool empty() const = 0;
+    virtual size_t getWidth() const = 0;
+    virtual size_t getHeight() const = 0;
+    virtual size_t getDepth() const = 0;
+};
+
+class GpuImageBase : public ImageBase {
+public:
+    virtual ~GpuImageBase() {}
+
+    virtual void init(size_t w, size_t h, size_t d) = 0;
+    virtual bool empty() const = 0;
+    virtual size_t getWidth() const = 0;
+    virtual size_t getHeight() const = 0;
+    virtual size_t getDepth() const = 0;
+
+    virtual int getTextureId() const = 0;
+};
+
 // ================================= CPU Image =================================
 template <typename T>
-class CpuImage : public ImageBase {
+class CpuImage : public CpuImageBase {
 public:
     using ValueType = T;
 
@@ -75,7 +99,7 @@ private:
 
 // ================================= GPU Image =================================
 template <typename T>
-class GpuImage : public ImageBase {
+class GpuImage : public GpuImageBase {
 public:
     using ValueType = T;
 
@@ -102,7 +126,7 @@ public:
     virtual size_t getHeight() const override;
     virtual size_t getDepth() const override;
 
-    int getTextureId() const;
+    virtual int getTextureId() const override;
 
 private:
     class Impl;
@@ -111,6 +135,8 @@ private:
 
 // ------------------------------ Pointer Aliases ------------------------------
 using ImageBasePtr = std::shared_ptr<ImageBase>;
+using CpuImageBasePtr = std::shared_ptr<CpuImageBase>;
+using GpuImageBasePtr = std::shared_ptr<GpuImageBase>;
 template <typename T>
 using GpuImagePtr = std::shared_ptr<GpuImage<T>>;
 template <typename T>

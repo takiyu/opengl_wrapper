@@ -5,6 +5,7 @@
 
 #include <oglw/gpu_buffer.h>
 #include <oglw/gpu_shader.h>
+#include <oglw/image.h>
 
 namespace oglw {
 
@@ -34,7 +35,10 @@ public:
     void setPrimitive(PrimitiveType prim_type, float prim_size = 1.f);
 
     void setShader(const GpuShaderPtr shader);
-    GpuShaderPtr getShader();
+    GpuShaderPtr getShader() const ;
+
+    void setFrameImage(const GpuImageBasePtr frame_img);
+    GpuImageBasePtr getFrameImage() const;
 
     void draw();
 

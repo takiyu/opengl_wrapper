@@ -146,4 +146,35 @@ TEST_CASE("Geometry test") {
             OGLW_CHECK(glfwPollEvents);
         }
     }
+
+    SECTION("Off screen") {
+        oglw::GlWindow win("Title");
+
+        auto vertex_array = oglw::GpuArrayBuffer<float>::Create();
+        vertex_array->init(3, 3);
+        const float VERTICES[9] = {0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f};
+        vertex_array->sendData(VERTICES);
+
+        auto gpu_shader = oglw::GpuShader::Create();
+        gpu_shader->attach(oglw::ShaderType::VERTEX, "");
+        gpu_shader->attach(oglw::ShaderType::FRAGMENT, "");
+        gpu_shader->link();
+
+        auto geom = oglw::Geometry::Create();
+        geom->setArrayBuffer(vertex_array, 0);
+        geom->setShader(gpu_shader);
+        geom->setPrimitive(oglw::PrimitiveType::POINT, 10.f);
+
+        auto gpu_img = oglw::GpuImage<uint8_t>::Create(100, 100, 3);
+        geom->setFrameImage(gpu_img);
+
+        geom->draw();
+
+        auto cpu_img = gpu_img->toCpu();
+        cpu_img.foreach([](size_t x, size_t y, size_t z, unsigned char& v) {
+                if (v != 0) {
+                    std::cout << x << ", " << y << ", " << z << ": " << static_cast<int>(v) << std::endl;
+                }
+        }, 1);
+    }
 }
