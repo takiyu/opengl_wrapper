@@ -8,10 +8,23 @@
 
 namespace oglw {
 
+class ImageBase;
+class CpuImageBase;
+class GpuImageBase;
 template <typename T>
 class CpuImage;
 template <typename T>
 class GpuImage;
+
+// ------------------------------ Pointer Aliases ------------------------------
+using ImageBasePtr = std::shared_ptr<ImageBase>;
+using CpuImageBasePtr = std::shared_ptr<CpuImageBase>;
+using GpuImageBasePtr = std::shared_ptr<GpuImageBase>;
+template <typename T>
+using GpuImagePtr = std::shared_ptr<GpuImage<T>>;
+template <typename T>
+using CpuImagePtr = std::shared_ptr<CpuImage<T>>;
+
 
 // ================================= Image Base ================================
 class ImageBase {
@@ -72,7 +85,8 @@ public:
     CpuImage& operator=(CpuImage&&);
     virtual ~CpuImage();
 
-    GpuImage<T> toGpu() const;
+    GpuImagePtr<T> toGpu() const;
+    void fromGpu(const GpuImagePtr<T>& gpu_img);
     void fromGpu(const GpuImage<T>& gpu_img);
 
     virtual void init(size_t w, size_t h, size_t d) override;
@@ -123,7 +137,8 @@ public:
     GpuImage& operator=(GpuImage&&);
     virtual ~GpuImage();
 
-    CpuImage<T> toCpu() const;
+    CpuImagePtr<T> toCpu() const;
+    void fromCpu(const CpuImagePtr<T>& cpu_img);
     void fromCpu(const CpuImage<T>& cpu_img);
 
     virtual void init(size_t w, size_t h, size_t d) override;
@@ -138,15 +153,6 @@ private:
     class Impl;
     std::unique_ptr<Impl> m_impl;
 };
-
-// ------------------------------ Pointer Aliases ------------------------------
-using ImageBasePtr = std::shared_ptr<ImageBase>;
-using CpuImageBasePtr = std::shared_ptr<CpuImageBase>;
-using GpuImageBasePtr = std::shared_ptr<GpuImageBase>;
-template <typename T>
-using GpuImagePtr = std::shared_ptr<GpuImage<T>>;
-template <typename T>
-using CpuImagePtr = std::shared_ptr<CpuImage<T>>;
 
 // ------------------------------ Specialization -------------------------------
 template class CpuImage<uint8_t>;

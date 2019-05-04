@@ -306,17 +306,23 @@ CpuImage<T>::~CpuImage() = default;
 
 // -----------------------------------------------------------------------------
 template <typename T>
-GpuImage<T> CpuImage<T>::toGpu() const {
+GpuImagePtr<T> CpuImage<T>::toGpu() const {
     // Just use GpuImage's implementation
-    GpuImage<T> gpu_img;
-    gpu_img.fromCpu(*this);
-    return std::move(gpu_img);
+    auto gpu_img = GpuImage<T>::Create();
+    gpu_img->fromCpu(*this);
+    return gpu_img;
+}
+
+template <typename T>
+void CpuImage<T>::fromGpu(const GpuImagePtr<T>& gpu_img) {
+    // Just use GpuImage's implementation
+    *this = *gpu_img->toCpu();
 }
 
 template <typename T>
 void CpuImage<T>::fromGpu(const GpuImage<T>& gpu_img) {
     // Just use GpuImage's implementation
-    *this = gpu_img.toCpu();
+    *this = *gpu_img.toCpu();
 }
 
 // -----------------------------------------------------------------------------

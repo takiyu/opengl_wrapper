@@ -171,6 +171,6 @@ TEST_CASE("Geometry test") {
         geom->draw();
 
         auto cpu_img = gpu_img->toCpu();
-        cpu_img.save("out_test_geom_offscreen.jpg");
+        cpu_img->save("out_test_geom_offscreen.jpg");
     }
 }

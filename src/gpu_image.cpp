@@ -150,7 +150,7 @@ public:
     }
 
     // -------------------------------------------------------------------------
-    CpuImage<T> toCpu() const {
+    CpuImagePtr<T> toCpu() const {
         // Copy GPU -> CPU
         // Cost of allocation is almost zero because of FastArray.
         if (empty()) {
@@ -163,15 +163,19 @@ public:
         OGLW_CHECK(glFramebufferTexture2D, GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                    GL_TEXTURE_2D, m_tex_id, 0);
 
-        CpuImage<T> cpu_img(m_w, m_h, m_d);
+        auto cpu_img = CpuImage<T>::Create(m_w, m_h, m_d);
 
         OGLW_CHECK(glPixelStorei, GL_PACK_ALIGNMENT, GetGlStoreSize(m_d));
         OGLW_CHECK(glReadPixels, 0, 0, m_w, m_h, GetGlFmt(m_d), GetGlType<T>(),
-                   cpu_img.data());
+                   cpu_img->data());
         OGLW_CHECK(glBindFramebuffer, GL_FRAMEBUFFER, 0);
         OGLW_CHECK(glDeleteFramebuffers, 1, &fbo_id);
 
-        return std::move(cpu_img);
+        return cpu_img;
+    }
+
+    void fromCpu(const CpuImagePtr<T>& cpu_img) {
+        fromCpu(*cpu_img);
     }
 
     void fromCpu(const CpuImage<T>& cpu_img) {
@@ -285,8 +289,13 @@ GpuImage<T>::~GpuImage() = default;
 
 // -----------------------------------------------------------------------------
 template <typename T>
-CpuImage<T> GpuImage<T>::toCpu() const {
+CpuImagePtr<T> GpuImage<T>::toCpu() const {
     return m_impl->toCpu();
+}
+
+template <typename T>
+void GpuImage<T>::fromCpu(const CpuImagePtr<T>& cpu_img) {
+    m_impl->fromCpu(cpu_img);
 }
 
 template <typename T>
