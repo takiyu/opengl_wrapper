@@ -36,6 +36,7 @@ public:
 
     Mat4 getProj();
     Mat4 getView();
+    Vec3 getEye();
 
 private:
     class Impl;

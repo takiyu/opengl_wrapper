@@ -138,6 +138,10 @@ public:
         return LookAt(m_eye, m_center, m_up);
     }
 
+    Vec3 getEye() {
+        return m_eye;
+    }
+
     // -------------------------------------------------------------------------
 private:
     Vec3 m_eye = {0.f, 0.f, 1.f};
@@ -201,6 +205,10 @@ Mat4 Camera::getProj() {
 
 Mat4 Camera::getView() {
     return m_impl->getView();
+}
+
+Vec3 Camera::getEye() {
+    return m_impl->getEye();
 }
 
 // -----------------------------------------------------------------------------
