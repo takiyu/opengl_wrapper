@@ -109,6 +109,11 @@ public:
         m_shader = shader;
     }
 
+    GpuShaderPtr getShader() {
+        return m_shader;
+    }
+
+    // -------------------------------------------------------------------------
     void draw() {
         // Check vertex array
         if (m_array_bufs.count(0) == 0 ||
@@ -234,6 +239,11 @@ void Geometry::setShader(const GpuShaderPtr shader) {
     m_impl->setShader(shader);
 }
 
+GpuShaderPtr Geometry::getShader() {
+    return m_impl->getShader();
+}
+
+// -------------------------------------------------------------------------
 void Geometry::draw() {
     m_impl->draw();
 }

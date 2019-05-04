@@ -34,6 +34,8 @@ public:
     void setPrimitive(PrimitiveType prim_type, float prim_size = 1.f);
 
     void setShader(const GpuShaderPtr shader);
+    GpuShaderPtr getShader();
+
     void draw();
 
 private:
