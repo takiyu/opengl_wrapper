@@ -57,18 +57,16 @@ public:
         // Bind color buffer to FBO (texture)
         const unsigned int tex_id =
                 static_cast<unsigned int>(m_frame_img->getTextureId());
-        OGLW_CHECK(glFramebufferTexture2D, GL_FRAMEBUFFER,
-                   GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0);
-
+        OGLW_CHECK(glFramebufferTexture2D, GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                   GL_TEXTURE_2D, tex_id, 0);
 
         // Create and bind depth buffer to FBO (render buffer)
         OGLW_CHECK(glGenRenderbuffers, 1, &m_depth_buf_id);
         OGLW_CHECK(glBindRenderbuffer, GL_RENDERBUFFER, m_depth_buf_id);
-        OGLW_CHECK(glRenderbufferStorage, GL_RENDERBUFFER,
-                   GL_DEPTH_COMPONENT, w, h);
+        OGLW_CHECK(glRenderbufferStorage, GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+                   w, h);
         OGLW_CHECK(glFramebufferRenderbuffer, GL_FRAMEBUFFER,
-                   GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
-                   m_depth_buf_id);
+                   GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depth_buf_id);
 
         // Set drawing target
         GLenum drawBufs[] = {GL_COLOR_ATTACHMENT0};
@@ -114,7 +112,8 @@ private:
 // -----------------------------------------------------------------------------
 FrameBuffer::FrameBuffer() : m_impl(std::make_unique<Impl>()) {}
 
-FrameBuffer::FrameBuffer(size_t w, size_t h) : m_impl(std::make_unique<Impl>(w, h)) {}
+FrameBuffer::FrameBuffer(size_t w, size_t h)
+    : m_impl(std::make_unique<Impl>(w, h)) {}
 
 FrameBuffer::FrameBuffer(FrameBuffer&&) = default;
 
@@ -143,4 +142,3 @@ void FrameBuffer::Unbind() {
 // -------------------------------------------------------------------------
 
 }  // namespace oglw
-

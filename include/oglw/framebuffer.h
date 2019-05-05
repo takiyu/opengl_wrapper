@@ -40,4 +40,3 @@ using FrameBufferPtr = std::shared_ptr<FrameBuffer>;
 }  // namespace oglw
 
 #endif
-

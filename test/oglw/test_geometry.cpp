@@ -1,10 +1,10 @@
 #include "catch2/catch.hpp"
 
+#include <oglw/framebuffer.h>
 #include <oglw/geometry.h>
 #include <oglw/gl_utils.h>
 #include <oglw/gpu_buffer.h>
 #include <oglw/gpu_shader.h>
-#include <oglw/framebuffer.h>
 
 #include "gl_window.h"
 
@@ -170,6 +170,9 @@ TEST_CASE("Geometry test") {
         auto gpu_img = framebuffer->getImage();
 
         framebuffer->bind();
+        OGLW_CHECK(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        OGLW_CHECK(glClearColor, 0.3, 0.3, 1.0, 1.0);
+        // TODO: Why are clears required twice?
         OGLW_CHECK(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         OGLW_CHECK(glClearColor, 0.3, 0.3, 1.0, 1.0);
         geom->draw();
