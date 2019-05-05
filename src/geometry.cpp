@@ -114,20 +114,7 @@ public:
     }
 
     // -------------------------------------------------------------------------
-    void setFrameImage(const GpuImageBasePtr frame_img) {
-        if (frame_img != nullptr && frame_img->empty()) {
-            throw std::runtime_error("GpuImage for FBO cannot be empty");
-        }
-        m_update_fragment = true;
-        m_frame_img = frame_img;
-    }
-
-    GpuImageBasePtr getFrameImage() const {
-        return m_frame_img;
-    }
-
-    // -------------------------------------------------------------------------
-    void draw(bool clear) {
+    void draw() {
         // Check vertex array
         if (m_array_bufs.count(0) == 0 ||
             *m_array_bufs[0]->getDataType() != typeid(float)) {
@@ -146,9 +133,6 @@ public:
         // Update index buffer binding
         updateIndexBuffer();
 
-        // Update frame buffer binding for off-screen rendering
-        updateFrameBuffer();
-
         // Use shader
         if (!m_shader) {
             throw std::runtime_error("No shader is set");
@@ -159,7 +143,7 @@ public:
         SetPrimitiveSize(m_prim_type, m_prim_size);
 
         // Draw
-        drawPrimitives(clear);
+        drawPrimitives();
 
         // Unbind
         OGLW_CHECK(glBindVertexArray, 0);
@@ -172,12 +156,6 @@ private:
         if (m_vao) {
             OGLW_CHECK(glDeleteVertexArrays, 1, &m_vao);
             m_vao = 0;
-        }
-        if (m_fbo_id) {
-            OGLW_CHECK(glDeleteFramebuffers, 1, &m_fbo_id);
-        }
-        if (m_depth_buf_id) {
-            OGLW_CHECK(glDeleteRenderbuffers, 1, &m_depth_buf_id);
         }
         m_array_bufs.clear();  // All destructors will be called.
         m_index_buffer = nullptr;
@@ -202,58 +180,7 @@ private:
         }
     }
 
-    void updateFrameBuffer() {
-        if (m_frame_img && m_update_fragment) {
-            m_update_fragment = false;
-
-            // Create FBO
-            if (m_fbo_id == 0) {
-                OGLW_CHECK(glGenFramebuffers, 1, &m_fbo_id);
-            }
-
-            // Bind FBO
-            OGLW_CHECK(glBindFramebuffer, GL_FRAMEBUFFER, m_fbo_id);
-
-            // Create and bind depth buffer to FBO (render buffer)
-            if (m_depth_buf_id == 0) {
-                OGLW_CHECK(glGenRenderbuffers, 1, &m_depth_buf_id);
-                OGLW_CHECK(glBindRenderbuffer, GL_RENDERBUFFER, m_depth_buf_id);
-                OGLW_CHECK(glRenderbufferStorage, GL_RENDERBUFFER,
-                           GL_DEPTH_COMPONENT, m_frame_img->getWidth(),
-                           m_frame_img->getHeight());
-                OGLW_CHECK(glFramebufferRenderbuffer, GL_FRAMEBUFFER,
-                           GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
-                           m_depth_buf_id);
-            }
-
-            // Bind color buffer to FBO (texture)
-            const unsigned int tex_id =
-                    static_cast<unsigned int>(m_frame_img->getTextureId());
-            OGLW_CHECK(glFramebufferTexture2D, GL_FRAMEBUFFER,
-                       GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0);
-
-            // Set drawing target
-            GLenum drawBufs[] = {GL_COLOR_ATTACHMENT0};
-            OGLW_CHECK(glDrawBuffers, 1, drawBufs);
-
-            // Unbind FBO
-            OGLW_CHECK(glBindFramebuffer, GL_FRAMEBUFFER, 0);
-        }
-    }
-
-    void drawPrimitives(bool clear) {
-        // Off-screen rendering
-        if (m_frame_img) {
-            glBindFramebuffer(GL_FRAMEBUFFER, m_fbo_id);
-            OGLW_CHECK(glViewport, 0, 0, m_frame_img->getWidth(),
-                       m_frame_img->getHeight());
-        }
-
-        // Clear
-        if (clear) {
-            OGLW_CHECK(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        }
-
+    void drawPrimitives() {
         // Draw
         const GLenum gl_prim = GetGlPrimitive(m_prim_type);
         if (m_index_buffer) {
@@ -266,26 +193,16 @@ private:
             const size_t size = m_array_bufs[0]->getNumElem();
             OGLW_CHECK(glDrawArrays, gl_prim, 0, size);
         }
-
-        // End of off-screen rendering
-        if (m_frame_img) {
-            OGLW_CHECK(glBindFramebuffer, GL_FRAMEBUFFER, 0);
-        }
     }
 
     GLuint m_vao = 0;
 
     bool m_update_attrib = false;
     bool m_update_indices = false;
-    bool m_update_fragment = false;
 
     std::map<unsigned int, GpuBufferBasePtr> m_array_bufs;
     GpuIndexBufferPtr m_index_buffer;
     GpuShaderPtr m_shader;
-
-    GpuImageBasePtr m_frame_img;
-    GLuint m_fbo_id = 0;
-    GLuint m_depth_buf_id = 0;
 
     PrimitiveType m_prim_type = PrimitiveType::TRIANGLE;
     float m_prim_size = 1.f;
@@ -327,17 +244,8 @@ GpuShaderPtr Geometry::getShader() const {
 }
 
 // -------------------------------------------------------------------------
-void Geometry::setFrameImage(const GpuImageBasePtr frame_img) {
-    m_impl->setFrameImage(frame_img);
-}
-
-GpuImageBasePtr Geometry::getFrameImage() const {
-    return m_impl->getFrameImage();
-}
-
-// -------------------------------------------------------------------------
-void Geometry::draw(bool clear) {
-    m_impl->draw(clear);
+void Geometry::draw() {
+    m_impl->draw();
 }
 
 }  // namespace oglw

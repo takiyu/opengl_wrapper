@@ -130,6 +130,7 @@ add_library(oglw ${LINK_TYPE}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/gpu_buffer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/gpu_shader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/geometry.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/framebuffer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/obj_loader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hair_loader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/camera.cpp

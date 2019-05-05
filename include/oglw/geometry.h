@@ -37,10 +37,7 @@ public:
     void setShader(const GpuShaderPtr shader);
     GpuShaderPtr getShader() const ;
 
-    void setFrameImage(const GpuImageBasePtr frame_img);
-    GpuImageBasePtr getFrameImage() const;
-
-    void draw(bool clear = false);
+    void draw();
 
 private:
     class Impl;
